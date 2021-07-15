@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog xmlns="http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0.1">
+  <service name="all" serviceType="Compound" base="">
+    <service name="ncdods" serviceType="OPENDAP" base="/thredds/dodsC/" />
+    <service name="HTTPServer" serviceType="HTTPServer" base="/thredds/fileServer/" />
+    <service name="wms" serviceType="WMS" base="/thredds/wms/" />
+    <service name="wcs" serviceType="WCS" base="/thredds/wcs/" />
+    <service name="subsetServer" serviceType="NetcdfSubset" base="/thredds/ncss/grid/" />
+    <service name="ncml" serviceType="NCML" base="/thredds/ncml/" />
+    <service name="uddc" serviceType="UDDC" base="/thredds/uddc/" />
+    <service name="iso" serviceType="ISO" base="/thredds/iso/" />
+  </service>
+  <service name="latest" serviceType="Resolver" base="" />
+  <dataset name="eReefs GBR4 hydrodynamic v2.0 model data" ID="fx3-gbr4_v2">
+    <metadata inherited="true">
+      <serviceName>all</serviceName>
+      <authority>au.org.nci</authority>
+      <dataType>GRID</dataType>
+      <documentation xlink:href="http://dapds00.nci.org.au/thredds/fileServer/licenses/fx3_readme.txt" xlink:title="README" />
+      <documentation type="rights" xlink:href="http://dapds00.nci.org.au/thredds/fileServer/licenses/fx3_licence.txt" xlink:title="Licence" />
+      <documentation type="history">http://www.emg.cmar.csiro.au/www/en/emg/software/EMS/hydrodynamics.html</documentation>
+      <documentation type="summary">Files from the GBR4 dataset from the eReefs project. See README linked above for further details.</documentation>
+      <creator>
+        <name>Coastal Environmental Modelling, CSIRO Oceans and Atmosphere</name>
+        <contact url="http://www.emg.cmar.csiro.au" email="cmar-hobart@csiro.au" />
+      </creator>
+      <publisher>
+        <name>National Computational Infrastructure</name>
+        <contact url="http://nci.org.au" email="help@nf.nci.org.au" />
+      </publisher>
+    </metadata>
+    <dataset name="latest.xml" ID="fx3-gbr4_v2/latest.xml" urlPath="latest.xml">
+      <serviceName>latest</serviceName>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2019-01" ID="fx3-gbr4_v2/gbr4_simple_2019-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2019-01.nc">
+      <dataSize units="Gbytes">15.74</dataSize>
+      <date type="modified">2019-01-19T01:09:58Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-12" ID="fx3-gbr4_v2/gbr4_simple_2018-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-12.nc">
+      <dataSize units="Gbytes">32.79</dataSize>
+      <date type="modified">2019-01-08T08:52:59Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-11" ID="fx3-gbr4_v2/gbr4_simple_2018-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-11.nc">
+      <dataSize units="Gbytes">27.27</dataSize>
+      <date type="modified">2018-12-02T14:05:34Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-10" ID="fx3-gbr4_v2/gbr4_simple_2018-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-10.nc">
+      <dataSize units="Gbytes">27.77</dataSize>
+      <date type="modified">2018-11-02T14:40:12Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-09" ID="fx3-gbr4_v2/gbr4_simple_2018-09.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-09.nc">
+      <dataSize units="Gbytes">26.70</dataSize>
+      <date type="modified">2018-10-03T13:58:42Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-08" ID="fx3-gbr4_v2/gbr4_simple_2018-08.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-08.nc">
+      <dataSize units="Gbytes">27.43</dataSize>
+      <date type="modified">2018-09-03T11:02:53Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-07" ID="fx3-gbr4_v2/gbr4_simple_2018-07.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-07.nc">
+      <dataSize units="Gbytes">26.64</dataSize>
+      <date type="modified">2018-08-04T02:24:04Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-06" ID="fx3-gbr4_v2/gbr4_simple_2018-06.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-06.nc">
+      <dataSize units="Gbytes">25.91</dataSize>
+      <date type="modified">2018-07-05T03:11:06Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-05" ID="fx3-gbr4_v2/gbr4_simple_2018-05.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-05.nc">
+      <dataSize units="Gbytes">27.58</dataSize>
+      <date type="modified">2018-06-02T14:35:02Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-04" ID="fx3-gbr4_v2/gbr4_simple_2018-04.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-04.nc">
+      <dataSize units="Gbytes">28.78</dataSize>
+      <date type="modified">2018-05-03T15:15:08Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-03" ID="fx3-gbr4_v2/gbr4_simple_2018-03.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-03.nc">
+      <dataSize units="Gbytes">30.99</dataSize>
+      <date type="modified">2018-04-13T13:28:07Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-02" ID="fx3-gbr4_v2/gbr4_simple_2018-02.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-02.nc">
+      <dataSize units="Gbytes">29.99</dataSize>
+      <date type="modified">2018-03-06T10:51:20Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-01" ID="fx3-gbr4_v2/gbr4_simple_2018-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-01.nc">
+      <dataSize units="Gbytes">33.32</dataSize>
+      <date type="modified">2018-02-02T12:41:39Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-12" ID="fx3-gbr4_v2/gbr4_simple_2017-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-12.nc">
+      <dataSize units="Gbytes">32.98</dataSize>
+      <date type="modified">2018-01-04T08:46:32Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-11" ID="fx3-gbr4_v2/gbr4_simple_2017-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-11.nc">
+      <dataSize units="Gbytes">27.10</dataSize>
+      <date type="modified">2017-12-04T02:05:16Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-10" ID="fx3-gbr4_v2/gbr4_simple_2017-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-10.nc">
+      <dataSize units="Gbytes">28.03</dataSize>
+      <date type="modified">2017-11-04T03:14:24Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-09" ID="fx3-gbr4_v2/gbr4_simple_2017-09.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-09.nc">
+      <dataSize units="Gbytes">26.54</dataSize>
+      <date type="modified">2017-10-02T12:51:54Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-08" ID="fx3-gbr4_v2/gbr4_simple_2017-08.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-08.nc">
+      <dataSize units="Gbytes">27.51</dataSize>
+      <date type="modified">2017-09-02T15:48:27Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-07" ID="fx3-gbr4_v2/gbr4_simple_2017-07.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-07.nc">
+      <dataSize units="Gbytes">27.42</dataSize>
+      <date type="modified">2017-08-03T07:53:47Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-06" ID="fx3-gbr4_v2/gbr4_simple_2017-06.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-06.nc">
+      <dataSize units="Gbytes">26.53</dataSize>
+      <date type="modified">2017-07-04T05:59:36Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-05" ID="fx3-gbr4_v2/gbr4_simple_2017-05.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-05.nc">
+      <dataSize units="Gbytes">27.88</dataSize>
+      <date type="modified">2017-06-04T03:15:35Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-04" ID="fx3-gbr4_v2/gbr4_simple_2017-04.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-04.nc">
+      <dataSize units="Gbytes">27.09</dataSize>
+      <date type="modified">2017-05-02T18:32:23Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-03" ID="fx3-gbr4_v2/gbr4_simple_2017-03.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-03.nc">
+      <dataSize units="Gbytes">28.21</dataSize>
+      <date type="modified">2017-04-10T23:28:30Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-02" ID="fx3-gbr4_v2/gbr4_simple_2017-02.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-02.nc">
+      <dataSize units="Gbytes">29.67</dataSize>
+      <date type="modified">2017-03-29T16:23:25Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2017-01" ID="fx3-gbr4_v2/gbr4_simple_2017-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2017-01.nc">
+      <dataSize units="Gbytes">31.95</dataSize>
+      <date type="modified">2017-03-29T15:36:27Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-12" ID="fx3-gbr4_v2/gbr4_simple_2016-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-12.nc">
+      <dataSize units="Gbytes">30.88</dataSize>
+      <date type="modified">2017-03-29T14:55:03Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-11" ID="fx3-gbr4_v2/gbr4_simple_2016-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-11.nc">
+      <dataSize units="Gbytes">25.02</dataSize>
+      <date type="modified">2017-03-29T14:21:43Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-10" ID="fx3-gbr4_v2/gbr4_simple_2016-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-10.nc">
+      <dataSize units="Gbytes">20.67</dataSize>
+      <date type="modified">2016-11-03T08:08:09Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-09" ID="fx3-gbr4_v2/gbr4_simple_2016-09.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-09.nc">
+      <dataSize units="Gbytes">20.03</dataSize>
+      <date type="modified">2016-10-04T02:54:37Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-08" ID="fx3-gbr4_v2/gbr4_simple_2016-08.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-08.nc">
+      <dataSize units="Gbytes">20.77</dataSize>
+      <date type="modified">2016-09-04T03:28:32Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-07" ID="fx3-gbr4_v2/gbr4_simple_2016-07.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-07.nc">
+      <dataSize units="Gbytes">20.81</dataSize>
+      <date type="modified">2016-08-02T14:30:08Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-06" ID="fx3-gbr4_v2/gbr4_simple_2016-06.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-06.nc">
+      <dataSize units="Gbytes">19.34</dataSize>
+      <date type="modified">2016-07-03T07:35:21Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-05" ID="fx3-gbr4_v2/gbr4_simple_2016-05.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-05.nc">
+      <dataSize units="Gbytes">19.89</dataSize>
+      <date type="modified">2016-06-22T09:05:58Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-04" ID="fx3-gbr4_v2/gbr4_simple_2016-04.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-04.nc">
+      <dataSize units="Gbytes">19.32</dataSize>
+      <date type="modified">2016-06-22T23:59:48Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-03" ID="fx3-gbr4_v2/gbr4_simple_2016-03.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-03.nc">
+      <dataSize units="Gbytes">20.08</dataSize>
+      <date type="modified">2016-06-22T08:52:22Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-02" ID="fx3-gbr4_v2/gbr4_simple_2016-02.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-02.nc">
+      <dataSize units="Gbytes">18.79</dataSize>
+      <date type="modified">2016-06-22T08:45:37Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2016-01" ID="fx3-gbr4_v2/gbr4_simple_2016-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2016-01.nc">
+      <dataSize units="Gbytes">20.03</dataSize>
+      <date type="modified">2016-06-22T08:38:30Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-12" ID="fx3-gbr4_v2/gbr4_simple_2015-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-12.nc">
+      <dataSize units="Gbytes">20.01</dataSize>
+      <date type="modified">2016-06-22T08:31:36Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-11" ID="fx3-gbr4_v2/gbr4_simple_2015-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-11.nc">
+      <dataSize units="Gbytes">19.30</dataSize>
+      <date type="modified">2016-06-22T08:24:49Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-10" ID="fx3-gbr4_v2/gbr4_simple_2015-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-10.nc">
+      <dataSize units="Gbytes">19.78</dataSize>
+      <date type="modified">2016-06-22T08:17:45Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-09" ID="fx3-gbr4_v2/gbr4_simple_2015-09.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-09.nc">
+      <dataSize units="Gbytes">19.16</dataSize>
+      <date type="modified">2016-06-22T08:10:42Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-08" ID="fx3-gbr4_v2/gbr4_simple_2015-08.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-08.nc">
+      <dataSize units="Gbytes">19.76</dataSize>
+      <date type="modified">2016-06-22T08:03:52Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-07" ID="fx3-gbr4_v2/gbr4_simple_2015-07.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-07.nc">
+      <dataSize units="Gbytes">19.72</dataSize>
+      <date type="modified">2016-06-22T07:56:47Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-06" ID="fx3-gbr4_v2/gbr4_simple_2015-06.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-06.nc">
+      <dataSize units="Gbytes">19.12</dataSize>
+      <date type="modified">2016-06-22T07:50:05Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-05" ID="fx3-gbr4_v2/gbr4_simple_2015-05.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-05.nc">
+      <dataSize units="Gbytes">20.02</dataSize>
+      <date type="modified">2016-06-22T07:43:07Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-04" ID="fx3-gbr4_v2/gbr4_simple_2015-04.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-04.nc">
+      <dataSize units="Gbytes">19.49</dataSize>
+      <date type="modified">2016-06-22T07:36:19Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-03" ID="fx3-gbr4_v2/gbr4_simple_2015-03.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-03.nc">
+      <dataSize units="Gbytes">20.26</dataSize>
+      <date type="modified">2016-06-22T07:29:46Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-02" ID="fx3-gbr4_v2/gbr4_simple_2015-02.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-02.nc">
+      <dataSize units="Gbytes">18.32</dataSize>
+      <date type="modified">2016-06-22T07:23:50Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2015-01" ID="fx3-gbr4_v2/gbr4_simple_2015-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2015-01.nc">
+      <dataSize units="Gbytes">20.23</dataSize>
+      <date type="modified">2016-06-22T07:17:13Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-12" ID="fx3-gbr4_v2/gbr4_simple_2014-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-12.nc">
+      <dataSize units="Gbytes">20.24</dataSize>
+      <date type="modified">2016-06-22T07:10:19Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-11" ID="fx3-gbr4_v2/gbr4_simple_2014-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-11.nc">
+      <dataSize units="Gbytes">19.51</dataSize>
+      <date type="modified">2016-06-22T07:03:59Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-10" ID="fx3-gbr4_v2/gbr4_simple_2014-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-10.nc">
+      <dataSize units="Gbytes">20.02</dataSize>
+      <date type="modified">2016-06-22T06:57:06Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-09" ID="fx3-gbr4_v2/gbr4_simple_2014-09.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-09.nc">
+      <dataSize units="Gbytes">19.33</dataSize>
+      <date type="modified">2016-06-22T06:50:58Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-08" ID="fx3-gbr4_v2/gbr4_simple_2014-08.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-08.nc">
+      <dataSize units="Gbytes">19.92</dataSize>
+      <date type="modified">2016-06-22T06:44:37Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-07" ID="fx3-gbr4_v2/gbr4_simple_2014-07.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-07.nc">
+      <dataSize units="Gbytes">19.95</dataSize>
+      <date type="modified">2016-06-22T06:38:13Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-06" ID="fx3-gbr4_v2/gbr4_simple_2014-06.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-06.nc">
+      <dataSize units="Gbytes">19.40</dataSize>
+      <date type="modified">2016-06-22T06:31:58Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-05" ID="fx3-gbr4_v2/gbr4_simple_2014-05.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-05.nc">
+      <dataSize units="Gbytes">20.07</dataSize>
+      <date type="modified">2016-06-22T06:25:08Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-04" ID="fx3-gbr4_v2/gbr4_simple_2014-04.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-04.nc">
+      <dataSize units="Gbytes">19.50</dataSize>
+      <date type="modified">2016-06-22T06:19:09Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-03" ID="fx3-gbr4_v2/gbr4_simple_2014-03.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-03.nc">
+      <dataSize units="Gbytes">20.20</dataSize>
+      <date type="modified">2016-06-22T06:12:27Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-02" ID="fx3-gbr4_v2/gbr4_simple_2014-02.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-02.nc">
+      <dataSize units="Gbytes">18.27</dataSize>
+      <date type="modified">2016-06-22T06:06:08Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2014-01" ID="fx3-gbr4_v2/gbr4_simple_2014-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2014-01.nc">
+      <dataSize units="Gbytes">20.25</dataSize>
+      <date type="modified">2016-06-22T05:59:31Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-12" ID="fx3-gbr4_v2/gbr4_simple_2013-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-12.nc">
+      <dataSize units="Gbytes">20.15</dataSize>
+      <date type="modified">2016-06-22T05:53:07Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-11" ID="fx3-gbr4_v2/gbr4_simple_2013-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-11.nc">
+      <dataSize units="Gbytes">19.51</dataSize>
+      <date type="modified">2016-06-22T05:46:58Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-10" ID="fx3-gbr4_v2/gbr4_simple_2013-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-10.nc">
+      <dataSize units="Gbytes">20.04</dataSize>
+      <date type="modified">2016-06-22T05:40:48Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-09" ID="fx3-gbr4_v2/gbr4_simple_2013-09.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-09.nc">
+      <dataSize units="Gbytes">19.35</dataSize>
+      <date type="modified">2016-06-22T05:34:37Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-08" ID="fx3-gbr4_v2/gbr4_simple_2013-08.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-08.nc">
+      <dataSize units="Gbytes">19.92</dataSize>
+      <date type="modified">2016-06-22T05:28:13Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-07" ID="fx3-gbr4_v2/gbr4_simple_2013-07.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-07.nc">
+      <dataSize units="Gbytes">19.93</dataSize>
+      <date type="modified">2016-06-22T05:21:30Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-06" ID="fx3-gbr4_v2/gbr4_simple_2013-06.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-06.nc">
+      <dataSize units="Gbytes">19.36</dataSize>
+      <date type="modified">2016-06-22T05:15:25Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-05" ID="fx3-gbr4_v2/gbr4_simple_2013-05.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-05.nc">
+      <dataSize units="Gbytes">20.03</dataSize>
+      <date type="modified">2016-06-22T05:09:00Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-04" ID="fx3-gbr4_v2/gbr4_simple_2013-04.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-04.nc">
+      <dataSize units="Gbytes">19.49</dataSize>
+      <date type="modified">2016-06-22T05:02:36Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-03" ID="fx3-gbr4_v2/gbr4_simple_2013-03.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-03.nc">
+      <dataSize units="Gbytes">20.17</dataSize>
+      <date type="modified">2016-06-22T04:56:20Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-02" ID="fx3-gbr4_v2/gbr4_simple_2013-02.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-02.nc">
+      <dataSize units="Gbytes">18.30</dataSize>
+      <date type="modified">2016-06-22T04:50:25Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2013-01" ID="fx3-gbr4_v2/gbr4_simple_2013-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2013-01.nc">
+      <dataSize units="Gbytes">20.19</dataSize>
+      <date type="modified">2016-06-22T04:44:14Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-12" ID="fx3-gbr4_v2/gbr4_simple_2012-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-12.nc">
+      <dataSize units="Gbytes">20.16</dataSize>
+      <date type="modified">2016-06-22T04:37:38Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-11" ID="fx3-gbr4_v2/gbr4_simple_2012-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-11.nc">
+      <dataSize units="Gbytes">19.46</dataSize>
+      <date type="modified">2016-06-22T04:31:35Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-10" ID="fx3-gbr4_v2/gbr4_simple_2012-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-10.nc">
+      <dataSize units="Gbytes">20.04</dataSize>
+      <date type="modified">2016-06-22T04:25:25Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-09" ID="fx3-gbr4_v2/gbr4_simple_2012-09.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-09.nc">
+      <dataSize units="Gbytes">19.35</dataSize>
+      <date type="modified">2016-06-22T04:19:09Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-08" ID="fx3-gbr4_v2/gbr4_simple_2012-08.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-08.nc">
+      <dataSize units="Gbytes">19.94</dataSize>
+      <date type="modified">2016-06-22T04:12:19Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-07" ID="fx3-gbr4_v2/gbr4_simple_2012-07.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-07.nc">
+      <dataSize units="Gbytes">20.02</dataSize>
+      <date type="modified">2016-06-22T04:05:16Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-06" ID="fx3-gbr4_v2/gbr4_simple_2012-06.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-06.nc">
+      <dataSize units="Gbytes">19.40</dataSize>
+      <date type="modified">2016-06-22T03:58:05Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-05" ID="fx3-gbr4_v2/gbr4_simple_2012-05.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-05.nc">
+      <dataSize units="Gbytes">20.09</dataSize>
+      <date type="modified">2016-06-22T03:51:02Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-04" ID="fx3-gbr4_v2/gbr4_simple_2012-04.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-04.nc">
+      <dataSize units="Gbytes">19.55</dataSize>
+      <date type="modified">2016-06-22T03:44:02Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-03" ID="fx3-gbr4_v2/gbr4_simple_2012-03.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-03.nc">
+      <dataSize units="Gbytes">20.27</dataSize>
+      <date type="modified">2016-06-22T03:36:53Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-02" ID="fx3-gbr4_v2/gbr4_simple_2012-02.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-02.nc">
+      <dataSize units="Gbytes">18.98</dataSize>
+      <date type="modified">2016-06-22T03:30:13Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2012-01" ID="fx3-gbr4_v2/gbr4_simple_2012-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2012-01.nc">
+      <dataSize units="Gbytes">20.27</dataSize>
+      <date type="modified">2016-06-22T03:23:01Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-12" ID="fx3-gbr4_v2/gbr4_simple_2011-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-12.nc">
+      <dataSize units="Gbytes">20.25</dataSize>
+      <date type="modified">2016-06-22T03:16:00Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-11" ID="fx3-gbr4_v2/gbr4_simple_2011-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-11.nc">
+      <dataSize units="Gbytes">19.48</dataSize>
+      <date type="modified">2016-06-22T03:09:25Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-10" ID="fx3-gbr4_v2/gbr4_simple_2011-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-10.nc">
+      <dataSize units="Gbytes">20.09</dataSize>
+      <date type="modified">2016-06-22T03:02:23Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-09" ID="fx3-gbr4_v2/gbr4_simple_2011-09.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-09.nc">
+      <dataSize units="Gbytes">19.38</dataSize>
+      <date type="modified">2016-06-22T02:55:44Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-08" ID="fx3-gbr4_v2/gbr4_simple_2011-08.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-08.nc">
+      <dataSize units="Gbytes">19.98</dataSize>
+      <date type="modified">2016-06-22T02:48:49Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-07" ID="fx3-gbr4_v2/gbr4_simple_2011-07.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-07.nc">
+      <dataSize units="Gbytes">19.96</dataSize>
+      <date type="modified">2016-06-22T02:42:05Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-06" ID="fx3-gbr4_v2/gbr4_simple_2011-06.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-06.nc">
+      <dataSize units="Gbytes">19.34</dataSize>
+      <date type="modified">2016-06-22T02:35:30Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-05" ID="fx3-gbr4_v2/gbr4_simple_2011-05.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-05.nc">
+      <dataSize units="Gbytes">20.05</dataSize>
+      <date type="modified">2016-06-22T02:28:31Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-04" ID="fx3-gbr4_v2/gbr4_simple_2011-04.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-04.nc">
+      <dataSize units="Gbytes">19.54</dataSize>
+      <date type="modified">2016-06-22T02:22:11Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-03" ID="fx3-gbr4_v2/gbr4_simple_2011-03.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-03.nc">
+      <dataSize units="Gbytes">20.24</dataSize>
+      <date type="modified">2016-06-22T02:15:17Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-02" ID="fx3-gbr4_v2/gbr4_simple_2011-02.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-02.nc">
+      <dataSize units="Gbytes">18.28</dataSize>
+      <date type="modified">2016-06-22T02:08:36Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2011-01" ID="fx3-gbr4_v2/gbr4_simple_2011-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2011-01.nc">
+      <dataSize units="Gbytes">20.34</dataSize>
+      <date type="modified">2016-06-22T02:02:06Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2010-12" ID="fx3-gbr4_v2/gbr4_simple_2010-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2010-12.nc">
+      <dataSize units="Gbytes">20.26</dataSize>
+      <date type="modified">2016-06-22T01:55:23Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2010-11" ID="fx3-gbr4_v2/gbr4_simple_2010-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2010-11.nc">
+      <dataSize units="Gbytes">19.54</dataSize>
+      <date type="modified">2016-06-22T01:48:50Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2010-10" ID="fx3-gbr4_v2/gbr4_simple_2010-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2010-10.nc">
+      <dataSize units="Gbytes">20.13</dataSize>
+      <date type="modified">2016-06-22T01:41:57Z</date>
+    </dataset>
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2010-09" ID="fx3-gbr4_v2/gbr4_simple_2010-09.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2010-09.nc">
+      <dataSize units="Gbytes">19.49</dataSize>
+      <date type="modified">2016-06-22T01:34:49Z</date>
+    </dataset>
+  </dataset>
+</catalog>

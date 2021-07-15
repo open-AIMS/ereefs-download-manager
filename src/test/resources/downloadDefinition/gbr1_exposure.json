@@ -1,0 +1,10 @@
+{
+    "_id": "downloads/gbr1_exposure",
+    "enabled": true,
+    "filenameTemplate": "gbr1_exposure_maps_{year}-{month}.nc",
+    "catalogueUrl": "${CATALOGUE_URL}",
+    "output": {
+        "downloadDir": "/tmp/download",
+        "destination": "/tmp/netcdfFiles"
+    }
+}

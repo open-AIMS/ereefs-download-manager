@@ -1,0 +1,10 @@
+{
+    "_id": "downloads/gbr4_v2_redownload",
+    "enabled": true,
+    "filenameTemplate": "gbr4_simple_{year}-{month}.nc",
+    "catalogueUrl": "${CATALOGUE_URL}",
+    "output": {
+        "downloadDir": "/tmp/netcdfFiles",
+        "destination": "file:///tmp/downloadedNetcdfFiles/gbr4_v2"
+    }
+}

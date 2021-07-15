@@ -1,0 +1,493 @@
+{
+    "catalogueId": "downloads/small",
+    "variables": {
+        "temp": {
+            "verticalDomain": {
+                "verticalCrs": {
+                    "dimensionless": true,
+                    "units": "m",
+                    "pressure": false,
+                    "positiveUpwards": false
+                },
+                "min": -3890,
+                "max": -3680,
+                "name": "Vertical Axis",
+                "heightValues": [
+                    -3890,
+                    -3680
+                ]
+            },
+            "scalar": true,
+            "parameter": {
+                "standardName": "Temperature",
+                "description": "Temperature",
+                "units": "degrees C",
+                "title": "Temperature",
+                "variableId": "temp"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "temp",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            }
+        },
+        "salt": {
+            "verticalDomain": {
+                "verticalCrs": {
+                    "dimensionless": true,
+                    "units": "m",
+                    "pressure": false,
+                    "positiveUpwards": false
+                },
+                "min": -3890,
+                "max": -3680,
+                "name": "Vertical Axis",
+                "heightValues": [
+                    -3890,
+                    -3680
+                ]
+            },
+            "scalar": true,
+            "parameter": {
+                "standardName": "Salinity",
+                "description": "Salinity",
+                "units": "PSU",
+                "title": "Salinity",
+                "variableId": "salt"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "salt",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            }
+        },
+        "wspeed_u:wspeed_v-mag": {
+            "scalar": true,
+            "role": "mag",
+            "parameter": {
+                "standardName": "wind_speed",
+                "description": "Magnitude of components:\neastward_wind and\nnorthward_wind",
+                "units": "ms-1",
+                "title": "Magnitude of wind",
+                "variableId": "wspeed_u:wspeed_v-mag"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "wspeed_u:wspeed_v-mag",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            },
+            "parentId": "wspeed_u:wspeed_v-group"
+        },
+        "u:v-mag": {
+            "verticalDomain": {
+                "verticalCrs": {
+                    "dimensionless": true,
+                    "units": "m",
+                    "pressure": false,
+                    "positiveUpwards": false
+                },
+                "min": -3890,
+                "max": -3680,
+                "name": "Vertical Axis",
+                "heightValues": [
+                    -3890,
+                    -3680
+                ]
+            },
+            "scalar": true,
+            "role": "mag",
+            "parameter": {
+                "standardName": "sea_water_speed",
+                "description": "Magnitude of components:\nEastward current and\nNorthward current",
+                "units": "ms-1",
+                "title": "Magnitude of sea water velocity",
+                "variableId": "u:v-mag"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "u:v-mag",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            },
+            "parentId": "u:v-group"
+        },
+        "wspeed_v": {
+            "scalar": true,
+            "role": "y",
+            "parameter": {
+                "standardName": "northward_wind",
+                "description": "northward_wind",
+                "units": "ms-1",
+                "title": "northward_wind",
+                "variableId": "wspeed_v"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "wspeed_v",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            },
+            "parentId": "wspeed_u:wspeed_v-group"
+        },
+        "eta": {
+            "scalar": true,
+            "parameter": {
+                "standardName": "sea_surface_height_above_sea_level",
+                "description": "Surface elevation",
+                "units": "metre",
+                "title": "sea_surface_height_above_sea_level",
+                "variableId": "eta"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "eta",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            }
+        },
+        "wspeed_u": {
+            "scalar": true,
+            "role": "x",
+            "parameter": {
+                "standardName": "eastward_wind",
+                "description": "eastward_wind",
+                "units": "ms-1",
+                "title": "eastward_wind",
+                "variableId": "wspeed_u"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "wspeed_u",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            },
+            "parentId": "wspeed_u:wspeed_v-group"
+        },
+        "u": {
+            "verticalDomain": {
+                "verticalCrs": {
+                    "dimensionless": true,
+                    "units": "m",
+                    "pressure": false,
+                    "positiveUpwards": false
+                },
+                "min": -3890,
+                "max": -3680,
+                "name": "Vertical Axis",
+                "heightValues": [
+                    -3890,
+                    -3680
+                ]
+            },
+            "scalar": true,
+            "role": "x",
+            "parameter": {
+                "standardName": "eastward_sea_water_velocity",
+                "description": "Eastward current",
+                "units": "ms-1",
+                "title": "eastward_sea_water_velocity",
+                "variableId": "u"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "u",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            },
+            "parentId": "u:v-group"
+        },
+        "v": {
+            "verticalDomain": {
+                "verticalCrs": {
+                    "dimensionless": true,
+                    "units": "m",
+                    "pressure": false,
+                    "positiveUpwards": false
+                },
+                "min": -3890,
+                "max": -3680,
+                "name": "Vertical Axis",
+                "heightValues": [
+                    -3890,
+                    -3680
+                ]
+            },
+            "scalar": true,
+            "role": "y",
+            "parameter": {
+                "standardName": "northward_sea_water_velocity",
+                "description": "Northward current",
+                "units": "ms-1",
+                "title": "northward_sea_water_velocity",
+                "variableId": "v"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "v",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            },
+            "parentId": "u:v-group"
+        },
+        "u:v-group": {
+            "verticalDomain": {
+                "verticalCrs": {
+                    "dimensionless": true,
+                    "units": "m",
+                    "pressure": false,
+                    "positiveUpwards": false
+                },
+                "min": -3890,
+                "max": -3680,
+                "name": "Vertical Axis",
+                "heightValues": [
+                    -3890,
+                    -3680
+                ]
+            },
+            "scalar": false,
+            "parameter": {
+                "description": "Vector fields for sea_water_velocity",
+                "units": "",
+                "title": "sea_water_velocity",
+                "variableId": "u:v-group"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "u:v-group",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            }
+        },
+        "wspeed_u:wspeed_v-group": {
+            "scalar": false,
+            "parameter": {
+                "description": "Vector fields for wind",
+                "units": "",
+                "title": "wind",
+                "variableId": "wspeed_u:wspeed_v-group"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "wspeed_u:wspeed_v-group",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            }
+        },
+        "u:v-dir": {
+            "verticalDomain": {
+                "verticalCrs": {
+                    "dimensionless": true,
+                    "units": "m",
+                    "pressure": false,
+                    "positiveUpwards": false
+                },
+                "min": -3890,
+                "max": -3680,
+                "name": "Vertical Axis",
+                "heightValues": [
+                    -3890,
+                    -3680
+                ]
+            },
+            "scalar": true,
+            "role": "dir",
+            "parameter": {
+                "standardName": "direction_of_sea_water_velocity",
+                "description": "Direction of components:\nEastward current and\nNorthward current",
+                "units": "degrees",
+                "title": "Direction of sea water velocity",
+                "variableId": "u:v-dir"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "u:v-dir",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            },
+            "parentId": "u:v-group"
+        },
+        "wspeed_u:wspeed_v-dir": {
+            "scalar": true,
+            "role": "dir",
+            "parameter": {
+                "standardName": "wind_to_direction",
+                "description": "Direction of components:\neastward_wind and\nnorthward_wind",
+                "units": "degrees",
+                "title": "Direction of wind",
+                "variableId": "wspeed_u:wspeed_v-dir"
+            },
+            "temporalDomain": {
+                "minDate": "2010-09-01T00:00:00.000+10:00",
+                "timeValues": [
+                    "2010-09-01T00:00:00.000+10:00",
+                    "2010-09-01T01:00:00.000+10:00"
+                ],
+                "name": "time",
+                "maxDate": "2010-09-01T01:00:00.000+10:00"
+            },
+            "id": "wspeed_u:wspeed_v-dir",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            },
+            "parentId": "wspeed_u:wspeed_v-group"
+        },
+        "botz": {
+            "scalar": true,
+            "parameter": {
+                "standardName": "depth",
+                "description": "Depth of sea-bed",
+                "units": "metre",
+                "title": "depth",
+                "variableId": "botz"
+            },
+            "id": "botz",
+            "horizontalDomain": {
+                "minLon": 142.16879272460938,
+                "maxLat": -7.0119082,
+                "minLat": -28.6960218,
+                "maxLon": 156.88563537597656
+            }
+        }
+    },
+    "datasetId": "small.nc",
+    "fileURI": "file:/tmp/netcdfFiles/small.nc",
+    "attributes": {
+        "Conventions": "CF-1.0",
+        "_CoordSysBuilder": "ucar.nc2.dataset.conv.CF1Convention",
+        "metadata_link": "http://marlin.csiro.au/geonetwork/srv/eng/search?&uuid=72020224-f086-434a-bbe9-a222c8e5cf0d",
+        "paramhead": "GBR 4km resolution grid",
+        "paramfile": "prm/gbr4_pear_0.prm",
+        "shoc_version": "v1.1 rev(5320M)",
+        "title": "GBR4 Hydro"
+    },
+    "lastModified": "2019-01-30T11:51:47.000+10:00",
+    "version": "2.0",
+    "status": "VALID"
+}

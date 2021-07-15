@@ -1,0 +1,20 @@
+{
+  "_id": "downloads__imos__OceanCurrent_GSLA_NRT00",
+  "enabled": true,
+  "catalogueUrls": [
+    {
+      "catalogueUrl": "http://thredds.aodn.org.au/thredds/catalog/IMOS/OceanCurrent/GSLA/NRT00/2010/catalog.xml",
+      "subDirectory": "2010"
+    }, {
+      "catalogueUrl": "http://thredds.aodn.org.au/thredds/catalog/IMOS/OceanCurrent/GSLA/NRT00/2011/catalog.xml",
+      "subDirectory": "2011"
+    }, {
+      "catalogueUrl": "http://thredds.aodn.org.au/thredds/catalog/IMOS/OceanCurrent/GSLA/NRT00/2012/catalog.xml",
+      "subDirectory": "2012"
+    }
+  ],
+  "output": {
+    "destination": "${STORAGE_PROTOCOL}${PRIVATE_BUCKET_NAME}/mirror/imos/OceanCurrent_GSLA_NRT00",
+    "downloadDir": "/tmp/netcdf/OceanCurrent_GSLA_NRT00"
+  }
+}

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog xmlns="http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0.1">
+  <service name="all" serviceType="Compound" base="">
+    <service name="ncdods" serviceType="OPENDAP" base="/thredds/dodsC/" />
+    <service name="HTTPServer" serviceType="HTTPServer" base="file:///tmp/originalNetcdfFiles/gbr4_v2/thredds/fileServer/" />
+    <service name="wms" serviceType="WMS" base="/thredds/wms/" />
+    <service name="wcs" serviceType="WCS" base="/thredds/wcs/" />
+    <service name="subsetServer" serviceType="NetcdfSubset" base="/thredds/ncss/grid/" />
+    <service name="ncml" serviceType="NCML" base="/thredds/ncml/" />
+    <service name="uddc" serviceType="UDDC" base="/thredds/uddc/" />
+    <service name="iso" serviceType="ISO" base="/thredds/iso/" />
+  </service>
+  <service name="latest" serviceType="Resolver" base="" />
+  <dataset name="eReefs GBR4 hydrodynamic v2.0 model data" ID="fx3-gbr4_v2">
+    <metadata inherited="true">
+      <serviceName>all</serviceName>
+      <authority>au.org.nci</authority>
+      <dataType>GRID</dataType>
+      <documentation xlink:href="http://dapds00.nci.org.au/thredds/fileServer/licenses/fx3_readme.txt" xlink:title="README" />
+      <documentation type="rights" xlink:href="http://dapds00.nci.org.au/thredds/fileServer/licenses/fx3_licence.txt" xlink:title="Licence" />
+      <documentation type="history">http://www.emg.cmar.csiro.au/www/en/emg/software/EMS/hydrodynamics.html</documentation>
+      <documentation type="summary">Files from the GBR4 dataset from the eReefs project. See README linked above for further details.</documentation>
+      <creator>
+        <name>Coastal Environmental Modelling, CSIRO Oceans and Atmosphere</name>
+        <contact url="http://www.emg.cmar.csiro.au" email="cmar-hobart@csiro.au" />
+      </creator>
+      <publisher>
+        <name>National Computational Infrastructure</name>
+        <contact url="http://nci.org.au" email="help@nf.nci.org.au" />
+      </publisher>
+    </metadata>
+    <dataset name="latest.xml" ID="fx3-gbr4_v2/latest.xml" urlPath="latest.xml">
+      <serviceName>latest</serviceName>
+    </dataset>
+    <!-- New file -->
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2019-02" ID="fx3-gbr4_v2/gbr4_simple_2019-02.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2019-02.nc">
+      <dataSize units="Kbytes">668</dataSize>
+      <date type="modified">2019-01-20T02:09:58Z</date>
+    </dataset>
+    <!-- Updated file - same checksum -->
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2019-01" ID="fx3-gbr4_v2/gbr4_simple_2019-01.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2019-01.nc">
+      <dataSize units="Kbytes">669</dataSize>
+      <date type="modified">2019-01-20T01:09:58Z</date>
+    </dataset>
+    <!-- Updated file - different checksum (gbr4_simple_2018-12_modified.nc) -->
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-12" ID="fx3-gbr4_v2/gbr4_simple_2018-12.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-12.nc">
+      <dataSize units="Kbytes">669</dataSize>
+      <date type="modified">2019-01-08T08:52:59Z</date>
+    </dataset>
+    <!-- Unchanged -->
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-11" ID="fx3-gbr4_v2/gbr4_simple_2018-11.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-11.nc">
+      <dataSize units="Kbytes">668</dataSize>
+      <date type="modified">2018-12-02T14:05:34Z</date>
+    </dataset>
+    <!-- Unchanged -->
+    <dataset name="eReefs GBR4 SHOC Model v2.0 Results for 2018-10" ID="fx3-gbr4_v2/gbr4_simple_2018-10.nc" urlPath="fx3/gbr4_v2/gbr4_simple_2018-10.nc">
+      <dataSize units="Kbytes">668</dataSize>
+      <date type="modified">2018-11-05T12:46:10Z</date>
+    </dataset>
+  </dataset>
+</catalog>

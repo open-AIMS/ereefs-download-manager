@@ -1,0 +1,10 @@
+{
+    "_id": "downloads/gbr1_v2",
+    "enabled": true,
+    "filenameTemplate": "gbr1_simple_{year}-{month}-{day}.nc",
+    "catalogueUrl": "${CATALOGUE_URL}",
+    "output": {
+        "downloadDir": "/tmp/dryRunNetcdfFiles",
+        "destination": "s3://netcdf/gbr1_v2"
+    }
+}

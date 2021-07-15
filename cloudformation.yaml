@@ -1,0 +1,243 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+  AWS CloudFormation Template for the eReefs Download Manager.
+
+Parameters:
+
+  Environment:
+    Type: String
+    Default: "test"
+    Description: >
+      A unique name for the environment within the target account. This could be generic, such as "test" or "prod",
+      or it could be specific to a developer, such as "asmith".
+
+  EcrUserId:
+    Type: String
+    Default: "jenkins-ereefs-test-download_manager" # This value is changed by the Jenkinsfile when pushing to production
+    Description: >
+      The id of the user that will push Docker images to the AWS ECR.
+
+Conditions:
+  IsProdEnv: {
+    "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
+  }
+
+Resources:
+
+  JobDefinitionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: downloadManagerPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - "ssm:Describe*"
+                  - "ssm:Get*"
+                  - "ssm:List*"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sns:*
+                Resource:
+                  - Fn::ImportValue:
+                      !Sub "definitions-sns-${Environment}-SNSTopicEReefsDownloadCompletedTopic"
+                  - Fn::ImportValue:
+                      !Sub "definitions-sns-${Environment}-SNSTopicEReefsAllDownloadCompletedTopic"
+                  - Fn::ImportValue:
+                      !Sub "definitions-sns-${Environment}-SNSTopicEReefsAdministration"
+
+  JobDefinition:
+    Type: 'AWS::Batch::JobDefinition'
+    Properties:
+      Type: container
+      JobDefinitionName: !Sub 'ereefs-download_manager-${Environment}'
+      ContainerProperties:
+        Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/ereefs-download_manager-${Environment}'
+        JobRoleArn: !Ref JobDefinitionRole
+        Vcpus: 1
+        Memory: 15000
+        Environment:
+          -
+            Name: 'EXECUTION_ENVIRONMENT'
+            Value: !Ref Environment
+          -
+            Name: 'DOWNLOAD_COMPLETE_TOPIC_ARN'
+            Value:
+              Fn::ImportValue:
+                !Sub "definitions-sns-${Environment}-SNSTopicEReefsDownloadCompletedTopic"
+          -
+            Name: 'ALL_DOWNLOAD_COMPLETE_TOPIC_ARN'
+            Value:
+              Fn::ImportValue:
+                !Sub "definitions-sns-${Environment}-SNSTopicEReefsAllDownloadCompletedTopic"
+          -
+            Name: 'ADMINISTRATION_TOPIC_ARN'
+            Value:
+              Fn::ImportValue:
+                !Sub "definitions-sns-${Environment}-SNSTopicEReefsAdministration"
+      RetryStrategy:
+        Attempts: 1
+
+  ElasticContainerRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub 'ereefs-download_manager-${Environment}'
+      RepositoryPolicyText:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowPush
+            Effect: Allow
+            Principal:
+              AWS:
+                - 'Fn::Join':
+                    - ':'
+                    - - 'arn:aws:iam:'
+                      - Ref: 'AWS::AccountId'
+                      - !Sub 'user/${EcrUserId}'
+            Action:
+              - 'ecr:PutImage'
+              - 'ecr:InitiateLayerUpload'
+              - 'ecr:UploadLayerPart'
+              - 'ecr:CompleteLayerUpload'
+
+  # Call workflow
+  # 1. A SNS message is sent to the ereefs-download_request
+  # 2. The Lambda function DownloadManagerSNSListener listen to the event sent to that topic
+  # 3. When a request message is sent, the Lambda function create a new Job
+  # Create the role for the Lambda Function ereefs-download-manager-sns-listener
+  LambdaSNSListenerRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: downloadManagerSNSListenerPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource:
+                  - "arn:aws:logs:*:*:*"
+              - Effect: Allow
+                Action:
+                  - "batch:*"
+                Resource: "*"
+
+  # Create the Lambda Function ereefs-download-manager-sns-listener (empty container) which will be filled by Jenkins
+  # NOTE: It seems like it's not possible to create a "test event" through CloudFormation
+  #     https://stackoverflow.com/questions/51783194/how-to-describe-aws-lambda-function-test-events-in-cloudformation-template
+  #     https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html
+  LambdaSNSListener:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: !Sub "ereefs-download-manager-${Environment}-sns-listener"
+      Handler: "index.handler"
+      Role: !GetAtt [ LambdaSNSListenerRole, Arn ]
+      Environment:
+        Variables:
+          JOB_QUEUE_ARN:
+            Fn::ImportValue:
+              !Sub "definitions-batch-${Environment}-ManagementJobQueue"
+          JOB_DEFINITION_ARN: !Ref JobDefinition
+      Code:
+        S3Bucket:
+          Fn::ImportValue: !Sub "definitions-s3-${Environment}-PrivateBucketName"
+        S3Key: "deploy/download-manager/lambda/sns-listener-deploy.zip"
+      Runtime: "nodejs12.x"
+      Timeout: 25
+
+  # Create an alias for the Lambda function (for the SNS subscription)
+  # NOTE: It's good practice to subscribe function aliases to SNS Topics instead of the function itself,
+  #     in case we want to switch it to a different version of the function.
+  #     It's a feature that we will probably never use (our versioning is done in Git),
+  #     and aliases hides the SNS association in the user interface, which creates confusion.
+  #     https://stackoverflow.com/questions/48898995/triggering-a-lambda-from-sns-using-cloud-formation
+  #     https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-alias.html
+  # NOTE: Alias are found in AWS console > Services > Compute > Lambda, menu Qualifiers, tab Aliases
+  #LambdaSNSListenerAlias:
+  #  Type: AWS::Lambda::Alias
+  #  Properties:
+  #    FunctionName: !Ref LambdaSNSListener
+  #    FunctionVersion: '$LATEST'
+  #    Name: lambdaSNSListenerAlias
+
+  # Add permission to trigger a Lambda function from a SNS topic
+  #     https://aws.amazon.com/premiumsupport/knowledge-center/lambda-subscribe-push-cloudformation/
+  LambdaSNSListenerInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn:
+        Fn::ImportValue:
+          !Sub "definitions-sns-${Environment}-SNSTopicEReefsDownloadRequestTopic"
+      FunctionName: !GetAtt [ LambdaSNSListener, Arn ]
+
+  # SNS subscription - Register LambdaSNSListener Lambda function to download-request SNS (defined in ereefs-definitions project)
+  #     https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-sns-subscription.html
+  LambdaSNSListenerSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn:
+        Fn::ImportValue:
+          !Sub "definitions-sns-${Environment}-SNSTopicEReefsDownloadRequestTopic"
+      Protocol: lambda
+      Endpoint: !GetAtt [ LambdaSNSListener, Arn ]
+
+
+  # CloudWatch rule to publish messages to the SNS topic "download-request"
+  #     https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-events-rule.html
+  #     https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-target.html
+  CloudWatchCronJob:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "ereefs-download_manager-lambda-sns-listener-rule-${Environment}"
+      Description: "CloudWatch rule which periodically create SNS message to trigger the SNS listener Lambda function which trigger the ereefs-download_manager docker container image"
+      ScheduleExpression: "cron(0 * * * ? *)" # Trigger every hour
+      State: !If [ IsProdEnv, "ENABLED", "DISABLED" ]
+      Targets:
+        -
+          Id: "ereefs-download_manager-cron-job"
+          Arn:
+            Fn::ImportValue:
+              !Sub "definitions-sns-${Environment}-SNSTopicEReefsDownloadRequestTopic"
+          Input: !If [ IsProdEnv, '{ "limit": -1, "dryRun": false }', '{ "limit": 2, "dryRun": false }' ]
+
+  # Give permission to CloudWatch (in general) to publish to the SNS topic "download-request"
+  CloudWatchCronJobPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: 'sns:Publish'
+            Resource: '*'
+      Topics:
+        - Fn::ImportValue:
+            !Sub "definitions-sns-${Environment}-SNSTopicEReefsDownloadRequestTopic"
+
