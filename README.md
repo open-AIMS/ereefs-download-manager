@@ -62,7 +62,7 @@ Event name: *download2files*
   "Records": [
     {
       "Sns": {
-        "Message": "{ \"limit\": 2, \"dryRun\": false }"
+        "Message": "{ \"limit\": 2, \"dryRun\": false, \"downloadDefinitionId\": \"downloads__ereefs__gbr4_v2_daily\" }"
       }
     }
   ]
