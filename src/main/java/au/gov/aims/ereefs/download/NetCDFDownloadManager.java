@@ -187,6 +187,13 @@ public class NetCDFDownloadManager {
             }
         }
 
+        if (downloadDefinitionId != null) {
+            downloadDefinitionId = downloadDefinitionId.trim();
+            if (downloadDefinitionId.isEmpty() || downloadDefinitionId.equalsIgnoreCase("null")) {
+                downloadDefinitionId = null;
+            }
+        }
+
         DatabaseClient dbClient = new DatabaseClient(APP_NAME);
 
         DownloadHelper downloadHelper = new DownloadHelper(dbClient, CacheStrategy.DISK);
