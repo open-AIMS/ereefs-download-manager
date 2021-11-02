@@ -17,6 +17,7 @@ import au.gov.aims.ereefs.bean.download.OutputBean;
 import au.gov.aims.ereefs.bean.metadata.netcdf.NetCDFMetadataBean;
 import au.gov.aims.ereefs.database.CacheStrategy;
 import au.gov.aims.ereefs.database.DatabaseClient;
+import au.gov.aims.ereefs.database.manager.DownloadManager;
 import au.gov.aims.ereefs.database.manager.MetadataManager;
 import au.gov.aims.ereefs.helper.DownloadHelper;
 import au.gov.aims.ereefs.helper.MetadataHelper;
@@ -35,6 +36,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import thredds.client.catalog.Access;
 import thredds.client.catalog.Catalog;
 import thredds.client.catalog.Dataset;
@@ -56,6 +58,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -109,6 +112,9 @@ public class NetCDFDownloadManager {
      *         0 to download nothing,
      *         Negative integer to download everything.
      *         Default: -1.</li>
+     *     <li><em>DOWNLOADDEFINITIONID</em>: String.
+     *         The download definition to download. Can be a disabled download definition.
+     *         Default: All enabled download definitions.</li>
      * </ul>
      *
      * @param args parameters
@@ -121,10 +127,15 @@ public class NetCDFDownloadManager {
      *         Negative integer to download everything.
      *         Default: -1.
      *         Example: "java -jar ereefs-download-manager-jar-with-dependencies.jar limit 2"
+     *     Use parameter "downloaddefinitionid" to specify the download definition to download.
+     *         Can be a disabled download definition.
+     *         Default: All enabled download definitions.
      */
     public static void main(String ... args) throws Exception {
         boolean dryRun = false;
         int limit = DEFAULT_DOWNLOAD_LIMIT;
+        // Used when manually downloading files for a specific download definition
+        String downloadDefinitionId = null;
 
         // Set dryRun and limit using environment variables
         String envDryRunStr = System.getenv("DRYRUN");
@@ -149,15 +160,16 @@ public class NetCDFDownloadManager {
                 LOGGER.warn("Invalid LIMIT environment variable. Expected integer. Found: " + envLimitStr, ex);
             }
         }
+        downloadDefinitionId = System.getenv("DOWNLOADDEFINITIONID");
 
         // Set dryRun and limit using arguments
         if (args != null && args.length > 0) {
             for (int i=0; i<args.length; i++) {
                 String arg = args[i];
-                if ("dryrun".equals(arg.toLowerCase())) {
+                if ("dryrun".equalsIgnoreCase(arg)) {
                     dryRun = true;
                 }
-                if ("limit".equals(arg.toLowerCase())) {
+                if ("limit".equalsIgnoreCase(arg)) {
                     if (++i < args.length) {
                         String limitStr = args[i];
                         try {
@@ -167,6 +179,18 @@ public class NetCDFDownloadManager {
                         }
                     }
                 }
+                if ("downloaddefinitionid".equalsIgnoreCase(arg)) {
+                    if (++i < args.length) {
+                        downloadDefinitionId = args[i];
+                    }
+                }
+            }
+        }
+
+        if (downloadDefinitionId != null) {
+            downloadDefinitionId = downloadDefinitionId.trim();
+            if (downloadDefinitionId.isEmpty() || downloadDefinitionId.equalsIgnoreCase("null")) {
+                downloadDefinitionId = null;
             }
         }
 
@@ -175,11 +199,36 @@ public class NetCDFDownloadManager {
         DownloadHelper downloadHelper = new DownloadHelper(dbClient, CacheStrategy.DISK);
 
         Iterable<DownloadBean> threddsCatalogueBeans = null;
-        try {
-            threddsCatalogueBeans = downloadHelper.getEnabledDownloads();
-        } catch (Exception ex) {
-            throw new Exception(String.format("Exception occurred while loading the list of catalogues from the database: %s",
-                    Utils.getExceptionMessage(ex)), ex);
+        if (downloadDefinitionId != null) {
+            DownloadManager downloadManager = new DownloadManager(dbClient, CacheStrategy.DISK);
+            JSONObject jsonDownloadDefinition = downloadManager.select(downloadDefinitionId);
+
+            if (jsonDownloadDefinition != null) {
+                // Create an iterator capable of returning a single DownloadBean
+                threddsCatalogueBeans = new Iterable<DownloadBean>() {
+                    public Iterator<DownloadBean> iterator() {
+                        return new Iterator<DownloadBean>() {
+                            private boolean visited = false;
+
+                            public boolean hasNext() {
+                                return !this.visited;
+                            }
+
+                            public DownloadBean next() {
+                                this.visited = true;
+                                return new DownloadBean(jsonDownloadDefinition);
+                            }
+                        };
+                    }
+                };
+            }
+        } else {
+            try {
+                threddsCatalogueBeans = downloadHelper.getEnabledDownloads();
+            } catch (Exception ex) {
+                throw new Exception(String.format("Exception occurred while loading the list of catalogues from the database: %s",
+                        Utils.getExceptionMessage(ex)), ex);
+            }
         }
 
         if (threddsCatalogueBeans == null) {

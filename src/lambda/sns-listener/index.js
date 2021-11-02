@@ -15,6 +15,7 @@
  *      {
  *          limit (Integer): Define the maximum number of files to download in each download definition. Negative number to download all available files. Default: 2.
  *          dryRun (Boolean): True to test the script (no files are downloaded).
+ *          downloadDefinitionId (String): The download definition to download. Default: All enabled download definitions.
  *      }
  *
  *  Developer documentation:
@@ -58,7 +59,7 @@ AWS.config.update({region: 'ap-southeast-2'});
  *   "Records": [
  *     {
  *       "Sns": {
- *         "Message": "{ \"limit\": -1, \"dryRun\": true }"
+ *         "Message": "{ \"limit\": -1, \"dryRun\": true, \"downloadDefinitionId\": \"downloads__ereefs__gbr4_v2_daily\" }"
  *       }
  *     }
  *   ]
@@ -68,6 +69,7 @@ AWS.config.update({region: 'ap-southeast-2'});
  *     {
  *         limit {integer}: Maximum number of files to download in each download definition. Negative number to download all available files. Default: 2.
  *         dryRun {boolean}: True to test the script (no write / delete).
+ *         downloadDefinitionId {string}: The download definition to download. Default: All enabled download definitions.
  *     }
  */
 
@@ -85,6 +87,8 @@ exports.handler = function (event, context, callback) {
 
     // dryRun is true unless specified otherwise (safety feature)
     const dryRun = snsJSONMessage.dryRun !== false && snsJSONMessage.dryRun !== "false";
+
+    const downloadDefinitionId = snsJSONMessage.downloadDefinitionId;
 
     const batch = new AWS.Batch();
 
@@ -207,6 +211,7 @@ exports.handler = function (event, context, callback) {
           console.log("    snsJSONMessage: " + JSON.stringify(snsJSONMessage, null, 2));
           console.log("    limit: " + limit);
           console.log("    dryRun: " + dryRun);
+          console.log("    downloadDefinitionId: " + downloadDefinitionId);
           const todayDateStr = getFormattedDate(new Date());
 
           // Submit a Job to AWS
@@ -219,6 +224,7 @@ exports.handler = function (event, context, callback) {
               'environment': [
                 {'name': 'LIMIT', 'value': '' + limit},
                 {'name': 'DRYRUN', 'value': dryRun ? 'true' : 'false'},
+                {'name': 'DOWNLOADDEFINITIONID', 'value': downloadDefinitionId },
               ]
             }
           };
