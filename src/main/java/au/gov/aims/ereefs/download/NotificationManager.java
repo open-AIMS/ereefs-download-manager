@@ -4,6 +4,7 @@
  */
 package au.gov.aims.ereefs.download;
 
+import au.gov.aims.ereefs.Utils;
 import au.gov.aims.ereefs.bean.download.DownloadBean;
 import au.gov.aims.ereefs.bean.metadata.netcdf.NetCDFMetadataBean;
 import com.amazonaws.services.sns.AmazonSNS;
@@ -80,14 +81,29 @@ public class NotificationManager implements AutoCloseable {
      * @throws IOException
      */
     public String sendCorruptedFileNotification(URI fileUri, String errorMessage) throws IOException {
+        return this.sendCorruptedFileNotification(fileUri, errorMessage, null);
+    }
+
+    public String sendCorruptedFileNotification(URI fileUri, String errorMessage, Exception ex) throws IOException {
         String topicArn = System.getenv(ADMINISTRATION_TOPIC_ARN_KEY);
 
-        String notificationMessage = String.format(
+        StringBuilder notificationMessageSb = new StringBuilder(String.format(
                 "ERROR: Corrupted File%n" +
                 "%n" +
                 "The downloaded NetCDF file %s is corrupted:%n" +
                 "%s",
-                fileUri, errorMessage);
+                fileUri, errorMessage));
+
+        if (ex != null) {
+            Throwable cause = ex.getCause();
+            while (cause != null) {
+                notificationMessageSb.append(
+                        String.format("%nCaused by: %s", Utils.getExceptionMessage(cause)));
+                cause = cause.getCause();
+            }
+        }
+
+        String notificationMessage = notificationMessageSb.toString();
 
         LOGGER.debug(String.format("Sending corrupted file SNS message: %s", notificationMessage));
         return this.sendNotification(notificationMessage, topicArn);

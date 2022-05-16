@@ -304,7 +304,11 @@ public class NetCDFDownloadManager {
      * @param limit Positive integer to only download X file per download definition. 0 to download nothing. Negative integer to download everything.
      * @return NetCDFDownloadOutput to describe which files was downloaded and which one failed.
      */
-    public NetCDFDownloadOutput download(DatabaseClient dbClient, NotificationManager notificationManager, boolean dryRun, int limit) throws Exception {
+    public NetCDFDownloadOutput download(
+            DatabaseClient dbClient,
+            NotificationManager notificationManager,
+            boolean dryRun, int limit) throws Exception {
+
         if (this.downloadBean == null) {
             LOGGER.warn("Can not download the datasets, the catalogue is null.");
             return null;
@@ -408,265 +412,34 @@ public class NetCDFDownloadManager {
                     if (!outdated) {
                         // The latest downloaded file we have is not outdated
                         // Check if it has been deleted from S3
-                        NetCDFMetadataBean.Status oldMetadataStatus = oldMetadata.getStatus();
-                        if (!NetCDFMetadataBean.Status.DELETED.equals(oldMetadataStatus)) {
-                            FileWrapper destinationFileWrapper = new FileWrapper(destinationURI, null);
-                            boolean fileExists = false;
-
-                            String scheme = destinationURI.getScheme();
-                            if ("file".equalsIgnoreCase(scheme)) {
-                                // NOTE: This is necessary for unit tests...
-                                fileExists = destinationFileWrapper.exists(null);
-                            } else {
-                                try (S3Client s3Client = new S3Client()) {
-                                    fileExists = destinationFileWrapper.exists(s3Client);
-                                }
-                            }
-
-                            if (!fileExists) {
-                                // It has been deleted from S3 and it's not flagged as Deleted.
-                                // It's time to fix this...
-                                oldMetadata.setStatus(NetCDFMetadataBean.Status.DELETED);
-                                metadataManager.save(oldMetadata.toJSON(), false);
-                            }
-                        }
+                        this.verifyDataset(metadataManager, oldMetadata, destinationURI);
 
                     } else {
                         // The file we have is outdated
                         // Download the NetCDF file from the Thredds server
-                        File downloadFile = this.getDownloadFile(newDataset);
+                        Boolean downloadSuccess = this.downloadDataset(
+                                metadataManager,
+                                notificationManager,
+                                oldMetadata,
+                                catalogueId, datasetId,
+                                catalogueOutputType,
+                                newDataset,
+                                newLastModified,
+                                fileUri,
+                                destinationURI,
+                                downloadOutput,
+                                dryRun);
 
-                        // Check if there is enough space left of the device to download the file
-                        long fileSize = newDataset.getDataSize();
-                        double fileSizeMB = (double)fileSize / Constants.MB;
-
-                        File downloadDir = downloadFile.getParentFile();
-                        if (!downloadDir.exists()) {
-                            if (!downloadDir.mkdirs()) {
-                                LOGGER.error(String.format("Can not create the directory for the temporary file %s", downloadDir));
-                                downloadOutput.addError(String.format("Can not create the directory for the temporary file %s, file URI: %s", downloadDir, fileUri));
-                                return downloadOutput;
-                            }
-                        }
-                        long freeSpace = downloadDir.getUsableSpace();
-                        double freeSpaceMB = (double)freeSpace / Constants.MB;
-
-                        LOGGER.info(String.format("Space left on %s (%.1f MB available) before downloading %s (%.1f MB)",
-                                downloadDir, freeSpaceMB, fileUri, fileSizeMB));
-
-                        if (fileSize > freeSpace) {
-                            LOGGER.error(String.format("There is not enough space left on %s (%.1f MB available) to download %s (%.1f MB)",
-                                    downloadDir, freeSpaceMB, fileUri, fileSizeMB));
-
-                            if (notificationManager != null) {
-                                // Send Notification
-                                try {
-                                    notificationManager.sendDiskFullNotification(fileUri, fileSizeMB, freeSpaceMB);
-                                } catch(Throwable ex) {
-                                    LOGGER.error("Error occurred while sending disk full notification.", ex);
-                                }
-                            }
-
-                            // Go to the next file. Hopefully it's smaller and can be downloaded
-                            downloadOutput.addWarning(String.format("Not enough disk space to download the file URI: %s. File size: %f, free space: %f", fileUri, fileSizeMB, freeSpaceMB));
-                            continue;
-                        }
-
-                        if (dryRun) {
-                            System.out.println(String.format("DRY RUN: URL \"%s\" will be download to \"%s\" (%.1f MB)",
-                                    fileUri, destinationURI, fileSizeMB));
-                        } else {
-                            try {
-                                LOGGER.debug("Before downloading: " + downloadFile);
-                                LOGGER.debug(String.format("    Total space: %d MB", downloadDir.getTotalSpace() / Constants.MB));
-                                LOGGER.debug(String.format("    Free space: %d MB", downloadDir.getFreeSpace() / Constants.MB));
-                                LOGGER.debug(String.format("    Usable space: %d MB", downloadDir.getUsableSpace() / Constants.MB));
-
-                                try {
-                                    NetCDFDownloadManager.downloadURIToFile(fileUri, downloadFile);
-                                } catch(OutOfMemoryError outOfMemory) {
-                                    LOGGER.error("Out Of Memory while downloading the NetCDF file", outOfMemory);
-                                    throw outOfMemory;
-                                } catch(Throwable ex) {
-                                    LOGGER.error(String.format("Error occurred while download the file URI %s to disk %s", fileUri, downloadFile), ex);
-                                    downloadOutput.addError(String.format("Error occurred while download the file URI %s to disk %s", fileUri, downloadFile));
-                                    continue;
-                                }
-
-                                // Unzip the file, if needed
-                                if (downloadFile.exists() && ZipUtils.isZipped(downloadFile.getName())) {
-                                    File unzippedDownloadFile = ZipUtils.unzipFile(downloadFile);
-                                    downloadFile.delete();
-                                    downloadFile = unzippedDownloadFile;
-                                }
-
-                                // If the NetCDF file was downloaded
-                                if (downloadFile.exists()) {
-                                    // Create the metadata for the downloaded NetCDF file
-                                    NetCDFMetadataBean newMetadata = NetCDFMetadataBean.create(catalogueId, datasetId, destinationURI, downloadFile, newLastModified);
-                                    if (newMetadata == null) {
-                                        // Should not happen
-                                        LOGGER.error(String.format("Can not generate metadata for file URI: %s, download file: %s", fileUri, downloadFile));
-                                        downloadOutput.addWarning(String.format("Can not generate metadata for file URI: %s", fileUri));
-                                        continue;
-                                    } else {
-                                        newMetadata.setLastDownloaded(System.currentTimeMillis());
-                                        if (NetCDFMetadataBean.Status.VALID.equals(newMetadata.getStatus())) {
-                                            // Compare file MD5
-                                            String oldChecksum = oldMetadata == null ? null : oldMetadata.getChecksum();
-                                            String newChecksum = newMetadata.getChecksum();
-                                            if (newChecksum != null && newChecksum.equals(oldChecksum)) {
-                                                oldMetadata.setLastDownloaded(System.currentTimeMillis());
-                                                oldMetadata.setLastModified(newLastModified);
-                                                metadataManager.save(oldMetadata.toJSON(), false);
-                                            } else {
-                                                boolean validData = false;
-                                                try {
-                                                    validData = NetCDFUtils.scan(downloadFile);
-                                                } catch(OutOfMemoryError outOfMemory) {
-                                                    LOGGER.error(String.format("Out Of Memory while scanning the NetCDF file %s found at URL %s.",
-                                                            downloadFile.getName(), fileUri), outOfMemory);
-                                                    throw outOfMemory;
-                                                } catch (Throwable ex) {
-                                                    LOGGER.error(String.format("The NetCDF file %s found at URL %s contains corrupted data.",
-                                                            downloadFile.getName(), fileUri), ex);
-
-                                                    if (notificationManager != null) {
-                                                        // Send Notification
-                                                        try {
-                                                            notificationManager.sendCorruptedFileNotification(fileUri, Utils.getExceptionMessage(ex));
-                                                        } catch(Throwable ex2) {
-                                                            LOGGER.error("Error occurred while sending corrupted file notification.", ex2);
-                                                        }
-                                                    }
-
-                                                    newMetadata.setStatus(NetCDFMetadataBean.Status.CORRUPTED);
-                                                    newMetadata.setErrorMessage("Data is unreadable");
-                                                    newMetadata.setStacktrace(ex);
-                                                    metadataManager.save(newMetadata.toJSON());
-
-                                                    downloadOutput.addWarning(String.format("Data is unreadable for file URI: %s", fileUri));
-                                                    continue;
-                                                }
-
-                                                if (validData) {
-                                                    LOGGER.info(String.format("Uploading %s to %s",
-                                                            downloadFile, destinationURI));
-
-                                                    switch (catalogueOutputType) {
-                                                        case S3:
-                                                            // Upload the NetCDF file to S3, if needed
-                                                            try {
-                                                                AmazonS3URI s3URI = new AmazonS3URI(destinationURI);
-                                                                this.uploadToS3(downloadFile, s3URI);
-                                                            } catch(OutOfMemoryError outOfMemory) {
-                                                                LOGGER.error("Out Of Memory while uploading the NetCDF file to S3", outOfMemory);
-                                                                throw outOfMemory;
-                                                            } catch(Throwable ex) {
-                                                                LOGGER.error(String.format("Error occurred while uploading the file %s from URI %s to S3 %s", downloadFile, fileUri, destinationURI), ex);
-                                                                downloadOutput.addError(String.format("Error occurred while uploading the file URI %s to S3 %s", fileUri, destinationURI));
-                                                                continue;
-                                                            } finally {
-
-                                                                LOGGER.debug("Before deleting: " + downloadFile);
-                                                                LOGGER.debug(String.format("    Total space: %d MB", downloadDir.getTotalSpace() / Constants.MB));
-                                                                LOGGER.debug(String.format("    Free space: %d MB", downloadDir.getFreeSpace() / Constants.MB));
-                                                                LOGGER.debug(String.format("    Usable space: %d MB", downloadDir.getUsableSpace() / Constants.MB));
-
-                                                                if (!downloadFile.delete()) {
-                                                                    LOGGER.error(String.format("Can not delete the downloaded file %s", downloadFile.getAbsolutePath()));
-                                                                }
-
-                                                                LOGGER.debug("After deleting: " + downloadFile);
-                                                                LOGGER.debug(String.format("    Total space: %d MB", downloadDir.getTotalSpace() / Constants.MB));
-                                                                LOGGER.debug(String.format("    Free space: %d MB", downloadDir.getFreeSpace() / Constants.MB));
-                                                                LOGGER.debug(String.format("    Usable space: %d MB", downloadDir.getUsableSpace() / Constants.MB));
-                                                            }
-                                                            break;
-
-                                                        case FILE:
-                                                            // Move the downloaded file to its final destination
-                                                            File destinationFile = new File(destinationURI);
-                                                            destinationFile.getParentFile().mkdirs();
-                                                            if (!downloadFile.renameTo(destinationFile)) {
-                                                                LOGGER.error(String.format("Can not rename the downloaded file %s to %s.", downloadFile, destinationFile));
-                                                                downloadOutput.addError(String.format("Can not rename the downloaded file %s to %s.", downloadFile, destinationFile));
-                                                                continue;
-                                                            }
-                                                            break;
-
-                                                        default:
-                                                            LOGGER.error(String.format("Invalid destination URI: %s for file URI: %s", destinationURI, fileUri));
-                                                            downloadOutput.addError(String.format("Invalid destination URI: %s for file URI: %s", destinationURI, fileUri));
-                                                            continue;
-                                                    }
-
-                                                    // Save the NetCDF file metadata into the database
-                                                    metadataManager.save(newMetadata.toJSON());
-                                                    downloadOutput.addSuccess(newMetadata);
-                                                } else {
-                                                    newMetadata.setStatus(NetCDFMetadataBean.Status.CORRUPTED);
-                                                    newMetadata.setErrorMessage("Data is unreadable");
-                                                    metadataManager.save(newMetadata.toJSON());
-                                                    downloadOutput.addWarning(String.format("Data is invalid for file URI: %s", fileUri));
-                                                }
-                                            }
-                                        } else {
-                                            metadataManager.save(newMetadata.toJSON());
-                                            downloadOutput.addWarning(String.format("Metadata is invalid for file URI: %s", fileUri));
-
-                                            // The downloaded file is NOT valid. Delete it
-                                            LOGGER.warn(String.format("The NetCDF file %s found at URL %s is corrupted.",
-                                                    downloadFile.getName(), fileUri));
-
-                                            String errorMessage = newMetadata.getErrorMessage();
-                                            if (errorMessage != null) {
-                                                LOGGER.error(String.format("Error: %s", errorMessage));
-                                            }
-                                            List<String> stacktrace = newMetadata.getStacktrace();
-                                            if (stacktrace != null) {
-                                                for (String stacktraceLine : stacktrace) {
-                                                    LOGGER.error(String.format("    %s", stacktraceLine));
-                                                }
-                                            }
-
-                                            if (notificationManager != null) {
-                                                // Send Notification
-                                                try {
-                                                    notificationManager.sendCorruptedFileNotification(fileUri, errorMessage);
-                                                } catch(Throwable ex) {
-                                                    LOGGER.error("Error occurred while sending corrupted file notification.", ex);
-                                                }
-                                            }
-
-                                            if (!downloadFile.delete()) {
-                                                LOGGER.error(String.format("Can not delete the downloaded file %s.", downloadFile));
-                                                return downloadOutput;
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    // The downloaded file doesn't exist
-                                    // Should not happen
-                                    LOGGER.error(String.format("The NetCDF file %s found at URI %s was not downloaded for unknown reason.",
-                                            downloadFile.getName(), fileUri));
-                                    downloadOutput.addWarning(String.format("Could not download file URI: %s", fileUri));
-                                    return downloadOutput;
-                                }
-                            } finally {
-                                if (downloadFile.exists()) {
-                                    LOGGER.debug("Deleting temporary file: " + downloadFile);
-                                    if (!downloadFile.delete()) {
-                                        LOGGER.error(String.format("Can not delete the temporary file %s", downloadFile.getAbsolutePath()));
-                                    }
-                                }
-                            }
+                        // If the downloadDataset method returned null, something went very wrong.
+                        // Stop execution.
+                        if (downloadSuccess == null) {
+                            return downloadOutput;
                         }
 
                         // Limit the number of files to attempt to download.
                         // This is used for testing.
                         // NOTE: If limit is negative, it will not stop. It will download all available files.
-                        if (limit > 0) {
+                        if (limit > 0 && downloadSuccess) {
                             counter--;
                             if (counter <= 0) {
                                 break;
@@ -687,6 +460,385 @@ public class NetCDFDownloadManager {
         }
 
         return downloadOutput;
+    }
+
+    private void verifyDataset(
+            MetadataManager metadataManager,
+            NetCDFMetadataBean oldMetadata,
+            URI destinationURI) throws Exception {
+
+        // The latest downloaded file we have is not outdated
+        // Check if it has been deleted from S3
+        NetCDFMetadataBean.Status oldMetadataStatus = oldMetadata.getStatus();
+        if (!NetCDFMetadataBean.Status.DELETED.equals(oldMetadataStatus)) {
+            FileWrapper destinationFileWrapper = new FileWrapper(destinationURI, null);
+            boolean fileExists = false;
+
+            String scheme = destinationURI.getScheme();
+            if ("file".equalsIgnoreCase(scheme)) {
+                // NOTE: This is necessary for unit tests...
+                fileExists = destinationFileWrapper.exists(null);
+            } else {
+                try (S3Client s3Client = new S3Client()) {
+                    fileExists = destinationFileWrapper.exists(s3Client);
+                }
+            }
+
+            if (!fileExists) {
+                // It has been deleted from S3 and it's not flagged as Deleted.
+                // It's time to fix this...
+                oldMetadata.setStatus(NetCDFMetadataBean.Status.DELETED);
+                metadataManager.save(oldMetadata.toJSON(), false);
+            }
+        }
+    }
+
+    // Return value:
+    //   false = Nothing was downloaded.
+    //   true = The dataset was successfully downloaded.
+    //   null = A critical error was logged in the downloadOutput and the execution needs to be halted.
+    // NOTE: Errors are logged in downloadOutput.
+    private Boolean downloadDataset(
+            MetadataManager metadataManager,
+            NotificationManager notificationManager,
+            NetCDFMetadataBean oldMetadata,
+            String catalogueId, String datasetId,
+            OutputBean.Type catalogueOutputType,
+            Dataset newDataset,
+            long newLastModified,
+            URI fileUri,
+            URI destinationURI,
+            NetCDFDownloadOutput downloadOutput,
+            boolean dryRun) throws Exception {
+
+        // The file we have is outdated
+        // Download the NetCDF file from the Thredds server
+        File downloadFile = this.getDownloadFile(newDataset);
+
+        // Check if there is enough space left of the device to download the file
+        long fileSize = newDataset.getDataSize();
+        double fileSizeMB = (double)fileSize / Constants.MB;
+
+        File downloadDir = downloadFile.getParentFile();
+        if (!downloadDir.exists()) {
+            if (!downloadDir.mkdirs()) {
+                LOGGER.error(String.format("Can not create the directory for the temporary file %s", downloadDir));
+                downloadOutput.addError(String.format("Can not create the directory for the temporary file %s, file URI: %s", downloadDir, fileUri));
+                return null;
+            }
+        }
+        long freeSpace = downloadDir.getUsableSpace();
+        double freeSpaceMB = (double)freeSpace / Constants.MB;
+
+        LOGGER.info(String.format("Space left on %s (%.1f MB available) before downloading %s (%.1f MB)",
+                downloadDir, freeSpaceMB, fileUri, fileSizeMB));
+
+        // Can't download this file, not enough available disk space.
+        if (fileSize > freeSpace) {
+            LOGGER.error(String.format("There is not enough space left on %s (%.1f MB available) to download %s (%.1f MB)",
+                    downloadDir, freeSpaceMB, fileUri, fileSizeMB));
+
+            if (notificationManager != null) {
+                // Send Notification
+                try {
+                    notificationManager.sendDiskFullNotification(fileUri, fileSizeMB, freeSpaceMB);
+                } catch(Throwable ex) {
+                    LOGGER.error("Error occurred while sending disk full notification.", ex);
+                }
+            }
+
+            // Go to the next file. Hopefully it's smaller and can be downloaded
+            downloadOutput.addWarning(String.format("Not enough disk space to download the file URI: %s. File size: %f, free space: %f", fileUri, fileSizeMB, freeSpaceMB));
+            return false;
+        }
+
+        Boolean downloadSuccess = null;
+        if (dryRun) {
+            System.out.println(String.format("DRY RUN: URL \"%s\" will be download to \"%s\" (%.1f MB)",
+                    fileUri, destinationURI, fileSizeMB));
+
+            downloadSuccess = true;
+
+        } else {
+            try {
+                downloadSuccess = this.downloadDatasetFile(downloadFile,
+                        metadataManager,
+                        notificationManager,
+                        oldMetadata,
+                        catalogueId, datasetId,
+                        catalogueOutputType,
+                        newLastModified,
+                        fileUri,
+                        destinationURI,
+                        downloadOutput);
+
+            } finally {
+                if (downloadFile.exists()) {
+                    LOGGER.debug("Deleting temporary file: " + downloadFile);
+                    if (!downloadFile.delete()) {
+                        LOGGER.error(String.format("Can not delete the temporary file %s", downloadFile.getAbsolutePath()));
+                    }
+                }
+            }
+        }
+
+        // If success is null, something went really wrong.
+        // Stop execution.
+
+        // If the download failed, return false.
+        // Let it try with the next one.
+
+        return downloadSuccess;
+    }
+
+    // Return value:
+    //   false = Nothing was downloaded.
+    //   true = The dataset file was successfully downloaded.
+    //   null = A critical error was logged in the downloadOutput and the execution needs to be halted.
+    // NOTE: Errors are logged in downloadOutput.
+    private Boolean downloadDatasetFile(
+            File downloadFile,
+            MetadataManager metadataManager,
+            NotificationManager notificationManager,
+            NetCDFMetadataBean oldMetadata,
+            String catalogueId, String datasetId,
+            OutputBean.Type catalogueOutputType,
+            long newLastModified,
+            URI fileUri,
+            URI destinationURI,
+            NetCDFDownloadOutput downloadOutput) throws Exception {
+
+        File downloadDir = downloadFile.getParentFile();
+
+        LOGGER.debug("Before downloading: " + downloadFile);
+        LOGGER.debug(String.format("    Total space: %d MB", downloadDir.getTotalSpace() / Constants.MB));
+        LOGGER.debug(String.format("    Free space: %d MB", downloadDir.getFreeSpace() / Constants.MB));
+        LOGGER.debug(String.format("    Usable space: %d MB", downloadDir.getUsableSpace() / Constants.MB));
+
+        try {
+            NetCDFDownloadManager.downloadURIToFile(fileUri, downloadFile);
+        } catch(OutOfMemoryError outOfMemory) {
+            LOGGER.error("Out Of Memory while downloading the NetCDF file", outOfMemory);
+            throw outOfMemory;
+        } catch(Throwable ex) {
+            LOGGER.error(String.format("Error occurred while download the file URI %s to disk %s", fileUri, downloadFile), ex);
+            downloadOutput.addError(String.format("Error occurred while download the file URI %s to disk %s", fileUri, downloadFile));
+            return false;
+        }
+
+        // Unzip the file, if needed
+        if (downloadFile.exists() && ZipUtils.isZipped(downloadFile.getName())) {
+            File unzippedDownloadFile = ZipUtils.unzipFile(downloadFile);
+            downloadFile.delete();
+            downloadFile = unzippedDownloadFile;
+        }
+
+        // If the NetCDF file was downloaded
+        Boolean fileIsValid = null;
+        if (downloadFile.exists()) {
+
+            fileIsValid = this.verifyDownloadedDatasetFile(
+                        downloadFile,
+                        metadataManager,
+                        notificationManager,
+                        oldMetadata,
+                        catalogueId, datasetId,
+                        catalogueOutputType,
+                        newLastModified,
+                        fileUri,
+                        destinationURI,
+                        downloadOutput);
+
+        } else {
+            // The downloaded file doesn't exist
+            // Should not happen
+            LOGGER.error(String.format("The NetCDF file %s found at URI %s was not downloaded for unknown reason.",
+                    downloadFile.getName(), fileUri));
+            downloadOutput.addWarning(String.format("Could not download file URI: %s", fileUri));
+            fileIsValid = null;
+        }
+
+        return fileIsValid;
+    }
+
+    // Verify downloaded file and save file metadata in the database.
+    // Return value:
+    //   false = The downloaded file is invalid.
+    //   true = The downloaded file is valid.
+    //   null = A critical error was logged in the downloadOutput and the execution needs to be halted.
+    // NOTE: Errors are logged in downloadOutput.
+    private Boolean verifyDownloadedDatasetFile(
+            File downloadFile,
+            MetadataManager metadataManager,
+            NotificationManager notificationManager,
+            NetCDFMetadataBean oldMetadata,
+            String catalogueId, String datasetId,
+            OutputBean.Type catalogueOutputType,
+            long newLastModified,
+            URI fileUri,
+            URI destinationURI,
+            NetCDFDownloadOutput downloadOutput) throws Exception {
+
+        File downloadDir = downloadFile.getParentFile();
+
+        // Create the metadata for the downloaded NetCDF file
+        NetCDFMetadataBean newMetadata = NetCDFMetadataBean.create(catalogueId, datasetId, destinationURI, downloadFile, newLastModified);
+        if (newMetadata == null) {
+            // Should not happen
+            LOGGER.error(String.format("Can not generate metadata for file URI: %s, download file: %s", fileUri, downloadFile));
+            downloadOutput.addWarning(String.format("Can not generate metadata for file URI: %s", fileUri));
+            return false;
+        } else {
+            newMetadata.setLastDownloaded(System.currentTimeMillis());
+            if (NetCDFMetadataBean.Status.VALID.equals(newMetadata.getStatus())) {
+                // Compare file MD5
+                String oldChecksum = oldMetadata == null ? null : oldMetadata.getChecksum();
+                String newChecksum = newMetadata.getChecksum();
+                if (newChecksum != null && newChecksum.equals(oldChecksum)) {
+                    oldMetadata.setLastDownloaded(System.currentTimeMillis());
+                    oldMetadata.setLastModified(newLastModified);
+                    metadataManager.save(oldMetadata.toJSON(), false);
+                } else {
+                    String errorMessage = null;
+                    try {
+                        errorMessage = NetCDFUtils.scanWithErrorMessage(downloadFile);
+                    } catch(OutOfMemoryError outOfMemory) {
+                        LOGGER.error(String.format("Out Of Memory while scanning the NetCDF file %s found at URL %s.",
+                                downloadFile.getName(), fileUri), outOfMemory);
+                        throw outOfMemory;
+                    } catch (Throwable ex) {
+                        LOGGER.error(String.format("Error occurred while scanning the NetCDF file %s found at URL %s",
+                                downloadFile.getName(), fileUri), ex);
+
+                        if (notificationManager != null) {
+                            // Send Notification
+                            try {
+                                notificationManager.sendCorruptedFileNotification(fileUri, Utils.getExceptionMessage(ex));
+                            } catch(Throwable ex2) {
+                                LOGGER.error("Error occurred while sending corrupted file notification.", ex2);
+                            }
+                        }
+
+                        newMetadata.setStatus(NetCDFMetadataBean.Status.CORRUPTED);
+                        newMetadata.setErrorMessage("Error occurred during data scan");
+                        newMetadata.setStacktrace(ex);
+                        metadataManager.save(newMetadata.toJSON());
+
+                        downloadOutput.addWarning(String.format("Error occurred during data scan for file URI: %s", fileUri));
+                        return false;
+                    }
+
+                    if (errorMessage != null) {
+                        String detailedErrorMessage = String.format("The NetCDF file %s found at URL %s contains invalid / corrupted data: %s",
+                                downloadFile.getName(), fileUri, errorMessage);
+                        LOGGER.error(detailedErrorMessage);
+
+                        if (notificationManager != null) {
+                            // Send Notification
+                            try {
+                                notificationManager.sendCorruptedFileNotification(fileUri, detailedErrorMessage);
+                            } catch(Throwable ex2) {
+                                LOGGER.error("Error occurred while sending corrupted file notification.", ex2);
+                            }
+                        }
+
+                        newMetadata.setStatus(NetCDFMetadataBean.Status.CORRUPTED);
+                        newMetadata.setErrorMessage(detailedErrorMessage);
+                        metadataManager.save(newMetadata.toJSON());
+                        downloadOutput.addWarning(detailedErrorMessage);
+                    } else {
+                        LOGGER.info(String.format("Uploading %s to %s",
+                                downloadFile, destinationURI));
+
+                        switch (catalogueOutputType) {
+                            case S3:
+                                // Upload the NetCDF file to S3, if needed
+                                try {
+                                    AmazonS3URI s3URI = new AmazonS3URI(destinationURI);
+                                    this.uploadToS3(downloadFile, s3URI);
+                                } catch(OutOfMemoryError outOfMemory) {
+                                    LOGGER.error("Out Of Memory while uploading the NetCDF file to S3", outOfMemory);
+                                    throw outOfMemory;
+                                } catch(Throwable ex) {
+                                    LOGGER.error(String.format("Error occurred while uploading the file %s from URI %s to S3 %s", downloadFile, fileUri, destinationURI), ex);
+                                    downloadOutput.addError(String.format("Error occurred while uploading the file URI %s to S3 %s", fileUri, destinationURI));
+                                    return false;
+                                } finally {
+
+                                    LOGGER.debug("Before deleting: " + downloadFile);
+                                    LOGGER.debug(String.format("    Total space: %d MB", downloadDir.getTotalSpace() / Constants.MB));
+                                    LOGGER.debug(String.format("    Free space: %d MB", downloadDir.getFreeSpace() / Constants.MB));
+                                    LOGGER.debug(String.format("    Usable space: %d MB", downloadDir.getUsableSpace() / Constants.MB));
+
+                                    if (!downloadFile.delete()) {
+                                        LOGGER.error(String.format("Can not delete the downloaded file %s", downloadFile.getAbsolutePath()));
+                                    }
+
+                                    LOGGER.debug("After deleting: " + downloadFile);
+                                    LOGGER.debug(String.format("    Total space: %d MB", downloadDir.getTotalSpace() / Constants.MB));
+                                    LOGGER.debug(String.format("    Free space: %d MB", downloadDir.getFreeSpace() / Constants.MB));
+                                    LOGGER.debug(String.format("    Usable space: %d MB", downloadDir.getUsableSpace() / Constants.MB));
+                                }
+                                break;
+
+                            case FILE:
+                                // Move the downloaded file to its final destination
+                                File destinationFile = new File(destinationURI);
+                                destinationFile.getParentFile().mkdirs();
+                                if (!downloadFile.renameTo(destinationFile)) {
+                                    LOGGER.error(String.format("Can not rename the downloaded file %s to %s.", downloadFile, destinationFile));
+                                    downloadOutput.addError(String.format("Can not rename the downloaded file %s to %s.", downloadFile, destinationFile));
+                                    return false;
+                                }
+                                break;
+
+                            default:
+                                LOGGER.error(String.format("Invalid destination URI: %s for file URI: %s", destinationURI, fileUri));
+                                downloadOutput.addError(String.format("Invalid destination URI: %s for file URI: %s", destinationURI, fileUri));
+                                return false;
+                        }
+
+                        // Save the NetCDF file metadata into the database
+                        metadataManager.save(newMetadata.toJSON());
+                        downloadOutput.addSuccess(newMetadata);
+                    }
+                }
+            } else {
+                metadataManager.save(newMetadata.toJSON());
+                downloadOutput.addWarning(String.format("Metadata is invalid for file URI: %s", fileUri));
+
+                // The downloaded file is NOT valid. Delete it
+                LOGGER.warn(String.format("The NetCDF file %s found at URL %s is corrupted.",
+                        downloadFile.getName(), fileUri));
+
+                String errorMessage = newMetadata.getErrorMessage();
+                if (errorMessage != null) {
+                    LOGGER.error(String.format("Error: %s", errorMessage));
+                }
+                List<String> stacktrace = newMetadata.getStacktrace();
+                if (stacktrace != null) {
+                    for (String stacktraceLine : stacktrace) {
+                        LOGGER.error(String.format("    %s", stacktraceLine));
+                    }
+                }
+
+                if (notificationManager != null) {
+                    // Send Notification
+                    try {
+                        notificationManager.sendCorruptedFileNotification(fileUri, errorMessage, newMetadata.getException());
+                    } catch(Throwable ex) {
+                        LOGGER.error("Error occurred while sending corrupted file notification.", ex);
+                    }
+                }
+
+                if (!downloadFile.delete()) {
+                    LOGGER.error(String.format("Can not delete the downloaded file %s.", downloadFile));
+                    return null;
+                }
+            }
+        }
+
+        return true;
     }
 
     public static long convertDateTypeToTimestamp(DateType dateType) {

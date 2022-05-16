@@ -51,8 +51,8 @@ public class NetCDFDownloadManagerTestManual extends DatabaseTestBase {
         NetCDFDownloadManager.downloadURIToFile(fileURI, downloadedFile);
 
         LOGGER.warn("Download finished. Validating the downloaded file.");
-        boolean validData = NetCDFUtils.scan(downloadedFile);
-        Assert.assertTrue(String.format("The downloaded file is corrupted: %s", downloadedFile), validData);
+        String errorMessage = NetCDFUtils.scanWithErrorMessage(downloadedFile);
+        Assert.assertNull(String.format("The downloaded file is corrupted: %s", downloadedFile), errorMessage);
 
         String downloadFileMd5sum =  Utils.md5sum(downloadedFile);
         Assert.assertEquals("Unexpected file md5sum", md5sum, downloadFileMd5sum);
@@ -150,6 +150,23 @@ public class NetCDFDownloadManagerTestManual extends DatabaseTestBase {
         boolean validData = NetCDFUtils.scan(downloadFile);
 
         Assert.assertTrue("The scan found issues with the downloaded file", validData);
+    }
+
+    @Test
+    @Ignore
+    public void testScanGBR4File() throws Exception {
+        File downloadFile = new File("/home/glafond/Desktop/TMP_INPUT/netcdf/ereefs/gbr4_v2/rivers/daily/gbr4_rivers_simple_2020-04.nc");
+        String catalogueId = "downloads__ereefs__gbr4_v2-river_tracing-daily";
+        String datasetId = "downloads__ereefs__gbr4_v2-river_tracing-daily/gbr4_rivers_simple_2020-04.nc";
+        URI destinationURI = new URI("file:///tmp/gbr4_rivers_simple_2020-04.nc");
+        long newLastModified = downloadFile.lastModified();
+
+        NetCDFMetadataBean newMetadata = NetCDFMetadataBean.create(catalogueId, datasetId, destinationURI, downloadFile, newLastModified);
+        Assert.assertNotNull("Could not extract NetCDF file metadata", newMetadata);
+
+        String errorMessage = NetCDFUtils.scanWithErrorMessage(downloadFile);
+
+        Assert.assertNull("The scan found issues with the downloaded file", errorMessage);
     }
 
     @Test
