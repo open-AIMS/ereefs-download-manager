@@ -470,7 +470,9 @@ public class NetCDFDownloadManager {
         // The latest downloaded file we have is not outdated
         // Check if it has been deleted from S3
         NetCDFMetadataBean.Status oldMetadataStatus = oldMetadata.getStatus();
-        if (!NetCDFMetadataBean.Status.DELETED.equals(oldMetadataStatus)) {
+        if (!NetCDFMetadataBean.Status.DELETED.equals(oldMetadataStatus) &&
+                !NetCDFMetadataBean.Status.CORRUPTED.equals(oldMetadataStatus)) {
+
             FileWrapper destinationFileWrapper = new FileWrapper(destinationURI, null);
             boolean fileExists = false;
 
