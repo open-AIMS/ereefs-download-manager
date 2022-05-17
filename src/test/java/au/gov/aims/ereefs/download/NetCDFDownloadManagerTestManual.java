@@ -9,6 +9,7 @@ import au.gov.aims.ereefs.bean.NetCDFUtils;
 import au.gov.aims.ereefs.bean.download.CatalogueUrlBean;
 import au.gov.aims.ereefs.bean.download.DownloadBean;
 import au.gov.aims.ereefs.bean.metadata.netcdf.NetCDFMetadataBean;
+import au.gov.aims.ereefs.bean.metadata.netcdf.VariableMetadataBean;
 import au.gov.aims.ereefs.database.DatabaseClient;
 import au.gov.aims.json.JSONUtils;
 import com.amazonaws.services.s3.internal.Constants;
@@ -19,12 +20,20 @@ import org.junit.Ignore;
 import org.junit.Test;
 import thredds.client.catalog.Catalog;
 import thredds.client.catalog.Dataset;
+import ucar.nc2.Variable;
+import ucar.nc2.dataset.NetcdfDataset;
+import uk.ac.rdg.resc.edal.dataset.GriddedDataset;
+import uk.ac.rdg.resc.edal.dataset.cdm.NetcdfDatasetAggregator;
+import uk.ac.rdg.resc.edal.metadata.VariableMetadata;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -154,19 +163,77 @@ public class NetCDFDownloadManagerTestManual extends DatabaseTestBase {
 
     @Test
     @Ignore
-    public void testScanGBR4File() throws Exception {
-        File downloadFile = new File("/home/glafond/Desktop/TMP_INPUT/netcdf/ereefs/gbr4_v2/rivers/daily/gbr4_rivers_simple_2020-04.nc");
+    public void testScanGBR4File() throws URISyntaxException {
+        File downloadFile1 = new File("/home/glafond/Desktop/TMP_INPUT/netcdf/ereefs/gbr4_v2/rivers/daily/gbr4_rivers_simple_2017-05.nc");
+        File downloadFile2 = new File("/home/glafond/Desktop/TMP_INPUT/netcdf/ereefs/gbr4_v2/rivers/daily/gbr4_rivers_simple_2020-04.nc");
         String catalogueId = "downloads__ereefs__gbr4_v2-river_tracing-daily";
-        String datasetId = "downloads__ereefs__gbr4_v2-river_tracing-daily/gbr4_rivers_simple_2020-04.nc";
+        String datasetId1 = "downloads__ereefs__gbr4_v2-river_tracing-daily/gbr4_rivers_simple_2017-05.nc";
+        String datasetId2 = "downloads__ereefs__gbr4_v2-river_tracing-daily/gbr4_rivers_simple_2020-04.nc";
         URI destinationURI = new URI("file:///tmp/gbr4_rivers_simple_2020-04.nc");
-        long newLastModified = downloadFile.lastModified();
 
-        NetCDFMetadataBean newMetadata = NetCDFMetadataBean.create(catalogueId, datasetId, destinationURI, downloadFile, newLastModified);
-        Assert.assertNotNull("Could not extract NetCDF file metadata", newMetadata);
+        String errorMessage1 = "NOT SET";
+        try {
+            NetCDFMetadataBean newMetadata1 = NetCDFMetadataBean.create(catalogueId, datasetId1, destinationURI, downloadFile1, downloadFile1.lastModified());
+            Assert.assertNotNull("Could not extract NetCDF file metadata", newMetadata1);
+            Assert.assertEquals("Wrong metadata status.", NetCDFMetadataBean.Status.VALID, newMetadata1.getStatus());
 
-        String errorMessage = NetCDFUtils.scanWithErrorMessage(downloadFile);
+            errorMessage1 = NetCDFUtils.scanWithErrorMessage(downloadFile1);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
 
-        Assert.assertNull("The scan found issues with the downloaded file", errorMessage);
+        String errorMessage2 = "NOT SET";
+        try {
+            NetCDFMetadataBean newMetadata2 = NetCDFMetadataBean.create(catalogueId, datasetId2, destinationURI, downloadFile2, downloadFile2.lastModified());
+            Assert.assertNotNull("Could not extract NetCDF file metadata", newMetadata2);
+            Assert.assertEquals("Wrong metadata status.", NetCDFMetadataBean.Status.VALID, newMetadata2.getStatus());
+
+            errorMessage2 = NetCDFUtils.scanWithErrorMessage(downloadFile2);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+
+        Assert.assertNull(String.format("The scan found issues with the downloaded file 1: %s", downloadFile1.getAbsolutePath()), errorMessage1);
+        Assert.assertNull(String.format("The scan found issues with the downloaded file 2: %s", downloadFile2.getAbsolutePath()), errorMessage2);
+    }
+
+    @Test
+    @Ignore
+    public void testExtractMetadataGBR4File() throws Exception {
+        File downloadFile = new File("/home/glafond/Desktop/TMP_INPUT/netcdf/ereefs/gbr4_v2/rivers/daily/gbr4_rivers_simple_2017-05.nc");
+
+        try (NetcdfDataset netcdfDataset = NetcdfDatasetAggregator.getDataset(downloadFile.getAbsolutePath(), false)) {
+            LOGGER.debug(String.format("Extracting attributes for NetCDF file: %s", downloadFile));
+            JSONObject attributes = NetCDFMetadataBean.loadAttributes(netcdfDataset.getGlobalAttributes());
+
+            LOGGER.debug(String.format("Extracting variables for NetCDF file: %s", downloadFile));
+
+            Map<String, VariableMetadataBean> variableMetadataBeanMap = new HashMap<String, VariableMetadataBean>();
+
+            GriddedDataset dataset = NetCDFUtils.getNetCDFDataset(downloadFile);
+
+            if (dataset != null) {
+                Set<String> variableIds = dataset.getVariableIds();
+                if (variableIds != null && !variableIds.isEmpty()) {
+                    for (String variableId : variableIds) {
+                        VariableMetadata variableMetadata = dataset.getVariableMetadata(variableId);
+
+                        Variable variable = netcdfDataset == null ? null : netcdfDataset.findVariable(variableId);
+
+                        if (variableMetadata != null) {
+                            variableMetadataBeanMap.put(variableId, new VariableMetadataBean(variableMetadata, variable));
+                        }
+                    }
+                }
+            }
+
+            // Don't trust UCAR to deal with resources properly. Insist on freeing the resource.
+            // NOTE: It's usually unnecessary to call releaseDataset twice, but it doesn't hurt to call it too often.
+            //     If the library doesn't release all its links to the resource, the file system will agree to delete
+            //     the NetCDF file but the disk space won't be freed until the Java VM dies.
+            NetcdfDatasetAggregator.releaseDataset(netcdfDataset);
+            NetcdfDatasetAggregator.releaseDataset(netcdfDataset);
+        }
     }
 
     @Test
