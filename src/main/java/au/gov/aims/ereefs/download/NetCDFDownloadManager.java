@@ -75,18 +75,21 @@ public class NetCDFDownloadManager {
     private static final String APP_NAME = "downloadManager";
     private static final long MAX_DOWNLOAD_FILE_SIZE = 100L * 1024 * 1024 * 1024; // 100 GB, in Bytes
 
-    // Retry | Wait
-    //  1    |   1 second
-    //  2    |   2 seconds
-    //  3    |   4 seconds
-    //  4    |   8 seconds
-    //  5    |  16 seconds
-    //  6    |  32 seconds
-    //  7    |  64 seconds (1 minute)
-    //  8    | 128 seconds (2 minute)
-    //  9    | 254 seconds (4 minute)
-    // 10    | 512 seconds (8.5 minute)
-    private static final int NB_DOWNLOAD_RETRY = 8;
+    // Control the "wait and retry" delay between retries.
+    // Attempt | Wait
+    //  1      |    0 seconds
+    //  2      |   10 seconds
+    //  3      |   20 seconds
+    //  4      |   40 seconds
+    //  5      |   80 seconds (~1 minute)
+    //  6      |  160 seconds (~2.5 minutes)
+    //  7      |  320 seconds (~5 minutes)
+    //  8      |  640 seconds (~10 minutes)
+    //  9      | 1280 seconds (~21 minutes)
+    // 10      | 2540 seconds (~42 minutes)
+    // 11      | 5120 seconds (~85 minutes)
+    private static final int DOWNLOAD_RETRY_INITIAL_WAIT = 10; // in seconds
+    private static final int MAX_DOWNLOAD_RETRY = 8;
 
     // Number of file to download in each Download definition.
     //     Use negative number to download everything.
@@ -1101,7 +1104,7 @@ public class NetCDFDownloadManager {
 
     private static void downloadHttpURIToFileWithRetry(URI uri, File temporaryFile) throws Exception {
         boolean success = false, abort = false;
-        int wait = 1; // Wait delay starts at 1 second
+        int wait = DOWNLOAD_RETRY_INITIAL_WAIT;
         int attempt = 1;
         Exception lastException = null;
 
@@ -1133,9 +1136,9 @@ public class NetCDFDownloadManager {
             } catch (Exception ex) {
                 lastException = ex;
                 LOGGER.warn(String.format("Exception occurred while downloading the data file on attempt %d/%d: %s",
-                        attempt, NB_DOWNLOAD_RETRY, ex.getMessage()));
+                        attempt, MAX_DOWNLOAD_RETRY, ex.getMessage()));
 
-                if (attempt < NB_DOWNLOAD_RETRY) {
+                if (attempt < MAX_DOWNLOAD_RETRY) {
                     LOGGER.warn(String.format("Wait %d seconds before retrying", wait));
                     Thread.sleep(wait * 1000L);
 
