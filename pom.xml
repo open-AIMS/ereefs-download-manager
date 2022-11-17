@@ -42,7 +42,7 @@
         <dependency>
             <groupId>au.gov.aims</groupId>
             <artifactId>ereefs-database</artifactId>
-            <version>0.6.22</version>
+            <version>0.7.0</version>
             <type>jar</type>
         </dependency>
 
