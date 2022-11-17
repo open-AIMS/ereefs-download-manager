@@ -75,6 +75,19 @@ public class NetCDFDownloadManager {
     private static final String APP_NAME = "downloadManager";
     private static final long MAX_DOWNLOAD_FILE_SIZE = 100L * 1024 * 1024 * 1024; // 100 GB, in Bytes
 
+    // Retry | Wait
+    //  1    |   1 second
+    //  2    |   2 seconds
+    //  3    |   4 seconds
+    //  4    |   8 seconds
+    //  5    |  16 seconds
+    //  6    |  32 seconds
+    //  7    |  64 seconds (1 minute)
+    //  8    | 128 seconds (2 minute)
+    //  9    | 254 seconds (4 minute)
+    // 10    | 512 seconds (8.5 minute)
+    private static final int NB_DOWNLOAD_RETRY = 8;
+
     // Number of file to download in each Download definition.
     //     Use negative number to download everything.
     private static final int DEFAULT_DOWNLOAD_LIMIT = -1;
@@ -1082,6 +1095,17 @@ public class NetCDFDownloadManager {
             LOGGER.info(String.format("Copying URL %s to file %s", uri, temporaryFile));
             Files.copy(new File(uri).toPath(), temporaryFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } else {
+            NetCDFDownloadManager.downloadHttpURIToFileWithRetry(uri, temporaryFile);
+        }
+    }
+
+    private static void downloadHttpURIToFileWithRetry(URI uri, File temporaryFile) throws Exception {
+        boolean success = false, abort = false;
+        int wait = 1; // Wait delay starts at 1 second
+        int attempt = 1;
+        Exception lastException = null;
+
+        while (!success && !abort) {
             HttpGet httpGet = null;
             try (CloseableHttpClient httpClient = NetCDFDownloadManager.openHttpClient()) {
                 httpGet = new HttpGet(uri);
@@ -1102,8 +1126,26 @@ public class NetCDFDownloadManager {
                         try (InputStream in = entity.getContent(); FileOutputStream out = new FileOutputStream(temporaryFile)) {
                             // The file size may be unknown on the server. This method stop streaming when the file size reach the limit.
                             NetCDFDownloadManager.binaryCopy(in, out, MAX_DOWNLOAD_FILE_SIZE);
+                            success = true;
                         }
                     }
+                }
+            } catch (Exception ex) {
+                lastException = ex;
+                LOGGER.warn(String.format("Exception occurred while downloading the data file on attempt %d/%d: %s",
+                        attempt, NB_DOWNLOAD_RETRY, ex.getMessage()));
+
+                if (attempt < NB_DOWNLOAD_RETRY) {
+                    LOGGER.warn(String.format("Wait %d seconds before retrying", wait));
+                    Thread.sleep(wait * 1000L);
+
+                    // Calculate the wait for the next failed attempt.
+                    //   Exponential incremental wait.
+                    wait *= 2;
+                    attempt++;
+                } else {
+                    LOGGER.error("Download failed too many times. Abort.");
+                    abort = true;
                 }
             } finally {
                 if (httpGet != null) {
@@ -1113,6 +1155,10 @@ public class NetCDFDownloadManager {
                     httpGet.reset();
                 }
             }
+        }
+
+        if (abort && lastException != null) {
+            throw lastException;
         }
     }
 
