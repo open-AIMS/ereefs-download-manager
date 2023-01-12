@@ -20,19 +20,22 @@ import org.junit.Assert;
 import org.junit.Test;
 import thredds.client.catalog.Dataset;
 
-import java.io.File;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
     private static final Logger LOGGER = Logger.getLogger(NetCDFDownloadManagerRedownloadTest.class);
 
     private static final String ORIG_CATALOGUE = "catalogue/nci_ereefs_gbr4v2_catalog_redownload.xml";
-    private static final String NEW_CATALOGUE = "catalogue/nci_ereefs_gbr4v2_catalog_redownload_new.xml";
+    private static final String NEW_CATALOGUE_TEMPLATE = "catalogue/nci_ereefs_gbr4v2_catalog_redownload_new_template.xml";
     private static final String NEW_CATALOGUE_INVALID_ID = "catalogue/nci_ereefs_gbr4v2_catalog_redownload_invalidID.xml";
 
     private static final String DOWNLOAD_DEFINITION = "downloadDefinition/gbr4_v2_redownload.json";
@@ -63,21 +66,6 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
         // Parse the download definition
         DownloadBean origDownloadBean = new DownloadBean(new JSONObject(origDownloadDefinitionStr));
         Assert.assertEquals("Wrong definition ID", DEFINITION_ID, origDownloadBean.getId());
-
-
-        // Parse updated catalogue
-        URL newCatalogueUrl = NetCDFDownloadManagerTest.class.getClassLoader().getResource(NEW_CATALOGUE);
-        Assert.assertNotNull("The new catalogue XML file could not be found in test resources folder.", newCatalogueUrl);
-
-        // Load the download definition (for the original catalogue)
-        String newDownloadDefinitionStr = JSONUtils.streamToString(
-                NetCDFDownloadManagerTest.class.getClassLoader().getResourceAsStream(DOWNLOAD_DEFINITION), true);
-        Assert.assertNotNull(String.format("Can get download definition file: %s", DOWNLOAD_DEFINITION), newDownloadDefinitionStr);
-        newDownloadDefinitionStr = newDownloadDefinitionStr.replace("${CATALOGUE_URL}", newCatalogueUrl.toString());
-
-        // Parse the download definition
-        DownloadBean newDownloadBean = new DownloadBean(new JSONObject(newDownloadDefinitionStr));
-        Assert.assertEquals("Wrong definition ID", DEFINITION_ID, newDownloadBean.getId());
 
         long downloadTimestamp = -1,
             reDownloadTimestamp = -1,
@@ -247,8 +235,27 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
         // 2. Trigger the re-download (updated catalogue)
 
         {
+            // Create updated catalogue file
+            String newCatalogue = NetCDFDownloadManagerRedownloadTest.createUpdatedCatalogue();
+
             // Update source files
             NetCDFDownloadManagerRedownloadTest.updateOriginalNetCDFFiles();
+
+
+            // Parse updated catalogue
+            URL newCatalogueUrl = Paths.get(newCatalogue).toUri().toURL();
+            Assert.assertNotNull("The new catalogue XML file could not be found in test resources folder.", newCatalogueUrl);
+
+            // Load the download definition (for the updated catalogue)
+            String newDownloadDefinitionStr = JSONUtils.streamToString(
+                    NetCDFDownloadManagerTest.class.getClassLoader().getResourceAsStream(DOWNLOAD_DEFINITION), true);
+            Assert.assertNotNull(String.format("Can't get download definition file: %s", DOWNLOAD_DEFINITION), newDownloadDefinitionStr);
+            newDownloadDefinitionStr = newDownloadDefinitionStr.replace("${CATALOGUE_URL}", newCatalogueUrl.toString());
+
+            // Parse the download definition
+            DownloadBean newDownloadBean = new DownloadBean(new JSONObject(newDownloadDefinitionStr));
+            Assert.assertEquals("Wrong definition ID", DEFINITION_ID, newDownloadBean.getId());
+
 
             // Create a download manager for the download definition
             NetCDFDownloadManager newDownloadManager = new NetCDFDownloadManager(newDownloadBean);
@@ -285,7 +292,7 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
                             destinationFile.exists());
                 }
             }
-            Assert.assertEquals(String.format("Wrong number of file in new catalogue: %s", NEW_CATALOGUE),
+            Assert.assertEquals(String.format("Wrong number of file in new catalogue: %s", newCatalogue),
                     5, newDatasetEntryMap.size());
 
             // Re-download the files
@@ -382,8 +389,8 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
                         Assert.assertEquals(String.format("Wrong checksum for dataset ID %s", datasetId),
                                 NetCDFMetadataBean.Status.VALID, metadataBean.getStatus());
 
-                        Assert.assertEquals(String.format("Wrong lastModified for dataset ID %s", datasetId),
-                                "2019-01-08T08:52:59.000Z", new DateTime(metadataBean.getLastModified(), DateTimeZone.UTC).toString());
+                        Assert.assertTrue(String.format("Wrong lastModified for dataset ID %s", datasetId),
+                                new DateTime(metadataBean.getLastModified(), DateTimeZone.UTC).compareTo(new DateTime(DateTimeZone.UTC).minusSeconds(300)) > 0);
 
                         Assert.assertTrue(String.format("Wrong lastDownloaded for dataset ID %s", datasetId),
                                 metadataBean.getLastDownloaded() >= reDownloadTimestamp);
@@ -396,8 +403,8 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
                         Assert.assertEquals(String.format("Wrong checksum for dataset ID %s", datasetId),
                                 NetCDFMetadataBean.Status.VALID, metadataBean.getStatus());
 
-                        Assert.assertEquals(String.format("Wrong lastModified for dataset ID %s", datasetId),
-                                "2019-01-20T01:09:58.000Z", new DateTime(metadataBean.getLastModified(), DateTimeZone.UTC).toString());
+                        Assert.assertTrue(String.format("Wrong lastModified for dataset ID %s", datasetId),
+                                new DateTime(metadataBean.getLastModified(), DateTimeZone.UTC).compareTo(new DateTime(DateTimeZone.UTC).minusSeconds(300)) > 0);
 
                         Assert.assertTrue(String.format("Wrong lastDownloaded for dataset ID %s", datasetId),
                                 metadataBean.getLastDownloaded() >= reDownloadTimestamp);
@@ -847,21 +854,6 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
         DownloadBean origDownloadBean = new DownloadBean(new JSONObject(origDownloadDefinitionStr));
         Assert.assertEquals("Wrong definition ID", DEFINITION_ID, origDownloadBean.getId());
 
-
-        // Parse updated catalogue
-        URL newCatalogueUrl = NetCDFDownloadManagerTest.class.getClassLoader().getResource(NEW_CATALOGUE);
-        Assert.assertNotNull("The new catalogue XML file could not be found in test resources folder.", newCatalogueUrl);
-
-        // Load the download definition (for the original catalogue)
-        String newDownloadDefinitionStr = JSONUtils.streamToString(
-                NetCDFDownloadManagerTest.class.getClassLoader().getResourceAsStream(DOWNLOAD_DEFINITION), true);
-        Assert.assertNotNull(String.format("Can get download definition file: %s", DOWNLOAD_DEFINITION), newDownloadDefinitionStr);
-        newDownloadDefinitionStr = newDownloadDefinitionStr.replace("${CATALOGUE_URL}", newCatalogueUrl.toString());
-
-        // Parse the download definition
-        DownloadBean newDownloadBean = new DownloadBean(new JSONObject(newDownloadDefinitionStr));
-        Assert.assertEquals("Wrong definition ID", DEFINITION_ID, newDownloadBean.getId());
-
         long downloadTimestamp = -1,
             reDownloadTimestamp = -1,
             reReDownloadTimestamp = -1,
@@ -1191,8 +1183,27 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
 
 
         {
+            // Create updated catalogue file
+            String newCatalogue = NetCDFDownloadManagerRedownloadTest.createUpdatedCatalogue();
+
             // Update source files
             NetCDFDownloadManagerRedownloadTest.updateOriginalNetCDFFiles();
+
+
+            // Parse updated catalogue
+            URL newCatalogueUrl = Paths.get(newCatalogue).toUri().toURL();
+            Assert.assertNotNull("The new catalogue XML file could not be found in test resources folder.", newCatalogueUrl);
+
+            // Load the download definition (for the updated catalogue)
+            String newDownloadDefinitionStr = JSONUtils.streamToString(
+                    NetCDFDownloadManagerTest.class.getClassLoader().getResourceAsStream(DOWNLOAD_DEFINITION), true);
+            Assert.assertNotNull(String.format("Can't get download definition file: %s", DOWNLOAD_DEFINITION), newDownloadDefinitionStr);
+            newDownloadDefinitionStr = newDownloadDefinitionStr.replace("${CATALOGUE_URL}", newCatalogueUrl.toString());
+
+            // Parse the download definition
+            DownloadBean newDownloadBean = new DownloadBean(new JSONObject(newDownloadDefinitionStr));
+            Assert.assertEquals("Wrong definition ID", DEFINITION_ID, newDownloadBean.getId());
+
 
             // Create a download manager for the download definition
             NetCDFDownloadManager newDownloadManager = new NetCDFDownloadManager(newDownloadBean);
@@ -1229,7 +1240,7 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
                             destinationFile.exists());
                 }
             }
-            Assert.assertEquals(String.format("Wrong number of file in new catalogue: %s", NEW_CATALOGUE),
+            Assert.assertEquals(String.format("Wrong number of file in new catalogue: %s", newCatalogue),
                     5, newDatasetEntryMap.size());
 
 
@@ -1336,8 +1347,8 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
                         Assert.assertEquals(String.format("Wrong checksum for dataset ID %s", datasetId),
                                 NetCDFMetadataBean.Status.VALID, metadataBean.getStatus());
 
-                        Assert.assertEquals(String.format("Wrong lastModified for dataset ID %s", datasetId),
-                                "2019-01-08T08:52:59.000Z", new DateTime(metadataBean.getLastModified(), DateTimeZone.UTC).toString());
+                        Assert.assertTrue(String.format("Wrong lastModified for dataset ID %s", datasetId),
+                                new DateTime(metadataBean.getLastModified(), DateTimeZone.UTC).compareTo(new DateTime(DateTimeZone.UTC).minusSeconds(300)) > 0);
 
                         Assert.assertTrue(String.format("Wrong lastDownloaded for dataset ID %s", datasetId),
                                 metadataBean.getLastDownloaded() >= reReDownloadTimestamp);
@@ -1351,8 +1362,8 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
                         Assert.assertEquals(String.format("Wrong checksum for dataset ID %s", datasetId),
                                 NetCDFMetadataBean.Status.DELETED, metadataBean.getStatus());
 
-                        Assert.assertEquals(String.format("Wrong lastModified for dataset ID %s", datasetId),
-                                "2019-01-20T01:09:58.000Z", new DateTime(metadataBean.getLastModified(), DateTimeZone.UTC).toString());
+                        Assert.assertTrue(String.format("Wrong lastModified for dataset ID %s", datasetId),
+                                new DateTime(metadataBean.getLastModified(), DateTimeZone.UTC).compareTo(new DateTime(DateTimeZone.UTC).minusSeconds(300)) > 0);
 
                         Assert.assertTrue(String.format("Wrong lastDownloaded for dataset ID %s", datasetId),
                                 metadataBean.getLastDownloaded() >= reReDownloadTimestamp);
@@ -1441,5 +1452,36 @@ public class NetCDFDownloadManagerRedownloadTest extends DatabaseTestBase {
 
         Files.copy(new File(gbr4_simple_2019_02_ressource.toURI()).toPath(),
                 gbr4_simple_2019_02_file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private static String createUpdatedCatalogue() throws IOException {
+        // Create directory and output file for new catalogue
+        String updatedCataloguePath = "/tmp/updatedThreddsCatalogue/catalogue.xml";
+        File newCatalogue = new File(updatedCataloguePath);
+        newCatalogue.getParentFile().mkdirs();
+
+        // Read catalogue template and replace template strings with values
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                Objects.requireNonNull(NetCDFDownloadManagerTest.class.getClassLoader().getResourceAsStream(NEW_CATALOGUE_TEMPLATE))));
+
+        String newline = System.getProperty("line.separator");
+        StringBuilder output = new StringBuilder();
+        String line;
+        while((line = reader.readLine())!= null)
+        {
+            if(line.contains("##REPLACE_WITH_CURRENT_DATE##"))
+            {
+                line = line.replaceAll("##REPLACE_WITH_CURRENT_DATE##", Instant.now().toString());
+            }
+            output.append(line).append(newline);
+        }
+        reader.close();
+
+        // Write new file
+        BufferedWriter writer = new BufferedWriter(new FileWriter(newCatalogue));
+        writer.write(output.toString());
+        writer.close();
+
+        return updatedCataloguePath;
     }
 }
