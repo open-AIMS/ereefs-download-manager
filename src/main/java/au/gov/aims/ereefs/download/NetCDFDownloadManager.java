@@ -409,16 +409,16 @@ public class NetCDFDownloadManager {
 
                     boolean outdated = true;
                     if (oldMetadata != null) {
-                        long oldMetadataLastDownloaded = oldMetadata.getLastDownloaded();
+                        long oldMetadataLastModified = oldMetadata.getLastModified();
 
                         // Compare lastModified dates
-                        if (newLastModified <= oldMetadataLastDownloaded) {
+                        if (newLastModified <= oldMetadataLastModified) {
                             outdated = false;
                             LOGGER.debug(String.format("The NetCDF file ID %s is up to date.", uniqueDatasetId));
                         } else {
                             LOGGER.info(String.format("The NetCDF file ID %s is outdated. Last modified found in metadata: %s, last modified found in the XML catalogue: %s",
                                     uniqueDatasetId,
-                                    oldMetadataLastDownloaded,
+                                    oldMetadataLastModified,
                                     newLastModified));
                         }
                     } else {
