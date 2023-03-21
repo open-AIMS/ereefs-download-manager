@@ -90,6 +90,8 @@ exports.handler = function (event, context, callback) {
 
     const downloadDefinitionId = snsJSONMessage.downloadDefinitionId;
 
+    const files = snsJSONMessage.files;
+
     const batch = new AWS.Batch();
 
     console.log("Checking if DownloadManager is already running.");
@@ -212,6 +214,7 @@ exports.handler = function (event, context, callback) {
           console.log("    limit: " + limit);
           console.log("    dryRun: " + dryRun);
           console.log("    downloadDefinitionId: " + downloadDefinitionId);
+          console.log("    files: " + files);
           const todayDateStr = getFormattedDate(new Date());
 
           // Submit a Job to AWS
@@ -225,6 +228,7 @@ exports.handler = function (event, context, callback) {
                 {'name': 'LIMIT', 'value': '' + limit},
                 {'name': 'DRYRUN', 'value': dryRun ? 'true' : 'false'},
                 {'name': 'DOWNLOADDEFINITIONID', 'value': downloadDefinitionId },
+                {'name': 'FILES', 'value': files },
               ]
             }
           };

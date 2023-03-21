@@ -24,6 +24,7 @@ import au.gov.aims.ereefs.helper.MetadataHelper;
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.internal.Constants;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
@@ -239,6 +240,16 @@ public class NetCDFDownloadManager {
 
         DownloadHelper downloadHelper = new DownloadHelper(dbClient, CacheStrategy.DISK);
 
+        LOGGER.info("DownloadManager task summary:");
+        if (downloadDefinitionId != null) {
+            LOGGER.info(String.format("- downloadDefinitionId: %s", downloadDefinitionId));
+        }
+        if (files != null && !files.isEmpty()) {
+            LOGGER.info(String.format("- files: %s", StringUtils.join(files, ", ")));
+        }
+        LOGGER.info(String.format("- limit: %d", limit));
+        LOGGER.info(String.format("- dryRun: %s", dryRun));
+
         Iterable<DownloadBean> threddsCatalogueBeans = null;
         if (downloadDefinitionId != null) {
             DownloadManager downloadManager = new DownloadManager(dbClient, CacheStrategy.DISK);
@@ -246,7 +257,7 @@ public class NetCDFDownloadManager {
 
             if (jsonDownloadDefinition != null) {
                 // Add files, if any are specified
-                if (files != null) {
+                if (files != null && !files.isEmpty()) {
                     jsonDownloadDefinition.put("files", files);
                 }
 
