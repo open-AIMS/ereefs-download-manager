@@ -21,7 +21,8 @@ Parameters:
   LambdaMd5sum:
     Type: String
     Default: ""
-    Description: MD5Sum of the zip archive containing the lambda function for the SNS listener.
+    Description: >
+      MD5sum of the zip archive containing the lambda function for the SNS listener.
 
 Conditions:
   IsProdEnv: {
@@ -170,7 +171,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::ImportValue: !Sub "definitions-s3-${Environment}-PrivateBucketName"
-        S3Key: "deploy/download-manager/lambda/sns-listener-deploy-${LambdaMd5sum}.zip"
+        S3Key: !Sub "deploy/download-manager/lambda/sns-listener-deploy-${LambdaMd5sum}.zip"
       Runtime: "nodejs12.x"
       Timeout: 25
 

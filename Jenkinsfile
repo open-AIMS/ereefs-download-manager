@@ -189,13 +189,7 @@ pipeline {
                             path: "deploy/download-manager/lambda/sns-listener-deploy-${md5sum}.zip", // Use the MD5 hash in the file name
                             file: "target/lambda/sns-listener-deploy.zip"
                         )
-                        /*
-                        waitForS3Object(
-                            bucket: "${AWS_LAMBDA_S3_DEPLOY_BUCKET}",
-                            object: "deploy/download-manager/lambda/sns-listener-deploy-${md5sum}.zip",
-                            timeoutSeconds: 300 // wait for up to 5 minutes for the object to become available
-                        )
-                        */
+                        // Wait for the object to become available on S3
                         sh "aws s3api wait object-exists --bucket ${AWS_LAMBDA_S3_DEPLOY_BUCKET} --key deploy/download-manager/lambda/sns-listener-deploy-${md5sum}.zip"
                         cfnUpdate(
                             stack: "${AWS_CLOUD_FORMATION_STACKNAME_PREFIX}-${params.executionEnvironment}",
