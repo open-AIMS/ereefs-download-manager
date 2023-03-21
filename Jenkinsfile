@@ -53,8 +53,6 @@ pipeline {
 
         // Retrieve the credentials from the Credentials Manager in Jenkins, for accessing Github Packages.
         GITHUB_PACKAGES_CREDENTIALS = credentials('github-packages')
-
-        LAMBDA_MD5SUM = sh(script: "md5sum src/lambda/sns-listener/index.js | cut -d' ' -f1", returnStdout: true).trim()
     }
 
     stages {
@@ -228,7 +226,6 @@ pipeline {
             steps {
 
                 script {
-
                     // Make a Lambda deployment package.
                     zip zipFile: 'target/lambda/sns-listener-deploy.zip', dir: 'src/lambda/sns-listener'
 
