@@ -53,6 +53,8 @@ pipeline {
 
         // Retrieve the credentials from the Credentials Manager in Jenkins, for accessing Github Packages.
         GITHUB_PACKAGES_CREDENTIALS = credentials('github-packages')
+
+        LAMBDA_MD5SUM = sh(script: "md5sum src/lambda/sns-listener/index.js | cut -d' ' -f1", returnStdout: true).trim()
     }
 
     stages {
@@ -176,20 +178,22 @@ pipeline {
             steps {
 
                 script {
-
                     // Make a Lambda deployment package.
                     zip zipFile: 'target/lambda/sns-listener-deploy.zip', dir: 'src/lambda/sns-listener'
+
+                    // Generate the MD5 hash of the zip file
+                    def md5sum = sh(script: "md5sum target/lambda/sns-listener-deploy.zip | cut -d' ' -f1", returnStdout: true).trim()
 
                     // Update the CloudFormation Stack.
                     withAWS(region: EREEFS_AWS_REGION, credentials: AWS_CREDENTIALS_ID_TEST) {
                         s3Upload(
                             bucket: "${AWS_LAMBDA_S3_DEPLOY_BUCKET}",
-                            path: "deploy/download-manager/lambda/sns-listener-deploy.zip",
+                            path: "deploy/download-manager/lambda/sns-listener-deploy-${md5sum}.zip", // Use the MD5 hash in the file name
                             file: "target/lambda/sns-listener-deploy.zip"
                         )
                         cfnUpdate(
                             stack: "${AWS_CLOUD_FORMATION_STACKNAME_PREFIX}-${params.executionEnvironment}",
-                            params: ["Environment=${params.executionEnvironment}", "EcrUserId=${AWS_CREDENTIALS_ID_TEST}"],
+                            params: ["Environment=${params.executionEnvironment}", "EcrUserId=${AWS_CREDENTIALS_ID_TEST}", "LambdaMd5sum=${md5sum}"],
                             tags: ["deployTarget=${params.deployTarget}","executionEnvironment=${params.executionEnvironment}"],
                             file: 'cloudformation.yaml',
                             timeoutInMinutes: 10,
