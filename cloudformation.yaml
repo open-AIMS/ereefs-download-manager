@@ -18,6 +18,12 @@ Parameters:
     Description: >
       The id of the user that will push Docker images to the AWS ECR.
 
+  LambdaMd5sum:
+    Type: String
+    Default: ""
+    Description: >
+      MD5sum of the zip archive containing the lambda function for the SNS listener.
+
 Conditions:
   IsProdEnv: {
     "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
@@ -165,7 +171,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::ImportValue: !Sub "definitions-s3-${Environment}-PrivateBucketName"
-        S3Key: "deploy/download-manager/lambda/sns-listener-deploy.zip"
+        S3Key: !Sub "deploy/download-manager/lambda/sns-listener-deploy-${LambdaMd5sum}.zip"
       Runtime: "nodejs12.x"
       Timeout: 25
 

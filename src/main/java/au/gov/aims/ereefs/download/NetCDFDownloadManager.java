@@ -24,6 +24,7 @@ import au.gov.aims.ereefs.helper.MetadataHelper;
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.internal.Constants;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
@@ -61,6 +62,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,14 +146,21 @@ public class NetCDFDownloadManager {
      *         Default: -1.
      *         Example: "java -jar ereefs-download-manager-jar-with-dependencies.jar limit 2"
      *     Use parameter "downloaddefinitionid" to specify the download definition to download.
-     *         Can be a disabled download definition.
+     *         Doesn't work with disabled download definitions.
      *         Default: All enabled download definitions.
+     *     Use parameter "files" to specify a comma separated list of file to be downloaded.
+     *         Can only be used with parameter "downloaddefinitionid".
      */
     public static void main(String ... args) throws Exception {
         boolean dryRun = false;
         int limit = DEFAULT_DOWNLOAD_LIMIT;
+
         // Used when manually downloading files for a specific download definition
         String downloadDefinitionId = null;
+
+        // Used to manually specify files to be downloaded
+        String filesStr = null;
+        List<String> files = null;
 
         // Set dryRun and limit using environment variables
         String envDryRunStr = System.getenv("DRYRUN");
@@ -178,6 +187,8 @@ public class NetCDFDownloadManager {
         }
         downloadDefinitionId = System.getenv("DOWNLOADDEFINITIONID");
 
+        filesStr = System.getenv("FILES");
+
         // Set dryRun and limit using arguments
         if (args != null && args.length > 0) {
             for (int i=0; i<args.length; i++) {
@@ -200,6 +211,11 @@ public class NetCDFDownloadManager {
                         downloadDefinitionId = args[i];
                     }
                 }
+                if ("files".equalsIgnoreCase(arg)) {
+                    if (++i < args.length) {
+                        filesStr = args[i];
+                    }
+                }
             }
         }
 
@@ -210,9 +226,29 @@ public class NetCDFDownloadManager {
             }
         }
 
+        if (filesStr != null && !filesStr.isEmpty()) {
+            files = new ArrayList<String>();
+            for (String fileStr : filesStr.split(",")) {
+                String cleanFileStr = fileStr.trim();
+                if (!cleanFileStr.isEmpty()) {
+                    files.add(cleanFileStr);
+                }
+            }
+        }
+
         DatabaseClient dbClient = new DatabaseClient(APP_NAME);
 
         DownloadHelper downloadHelper = new DownloadHelper(dbClient, CacheStrategy.DISK);
+
+        LOGGER.info("DownloadManager task summary:");
+        if (downloadDefinitionId != null) {
+            LOGGER.info(String.format("- downloadDefinitionId: %s", downloadDefinitionId));
+        }
+        if (files != null && !files.isEmpty()) {
+            LOGGER.info(String.format("- files: %s", StringUtils.join(files, ", ")));
+        }
+        LOGGER.info(String.format("- limit: %d", limit));
+        LOGGER.info(String.format("- dryRun: %s", dryRun));
 
         Iterable<DownloadBean> threddsCatalogueBeans = null;
         if (downloadDefinitionId != null) {
@@ -220,6 +256,11 @@ public class NetCDFDownloadManager {
             JSONObject jsonDownloadDefinition = downloadManager.select(downloadDefinitionId);
 
             if (jsonDownloadDefinition != null) {
+                // Add files, if any are specified
+                if (files != null && !files.isEmpty()) {
+                    jsonDownloadDefinition.put("files", files);
+                }
+
                 // Create an iterator capable of returning a single DownloadBean
                 threddsCatalogueBeans = new Iterable<DownloadBean>() {
                     public Iterator<DownloadBean> iterator() {
@@ -409,16 +450,16 @@ public class NetCDFDownloadManager {
 
                     boolean outdated = true;
                     if (oldMetadata != null) {
-                        long oldMetadataLastDownloaded = oldMetadata.getLastDownloaded();
+                        long oldMetadataLastModified = oldMetadata.getLastModified();
 
                         // Compare lastModified dates
-                        if (newLastModified <= oldMetadataLastDownloaded) {
+                        if (newLastModified <= oldMetadataLastModified) {
                             outdated = false;
                             LOGGER.debug(String.format("The NetCDF file ID %s is up to date.", uniqueDatasetId));
                         } else {
                             LOGGER.info(String.format("The NetCDF file ID %s is outdated. Last modified found in metadata: %s, last modified found in the XML catalogue: %s",
                                     uniqueDatasetId,
-                                    oldMetadataLastDownloaded,
+                                    oldMetadataLastModified,
                                     newLastModified));
                         }
                     } else {
@@ -964,6 +1005,7 @@ public class NetCDFDownloadManager {
         }
 
         Pattern regex = this.downloadBean.getFilenameRegex();
+        Set<String> files = this.downloadBean.getFiles();
         Map<String, DatasetEntry> filteredDatasets = new HashMap<String, DatasetEntry>();
         for (CatalogueEntry catalogueEntry : catalogues) {
             Catalog catalogue = catalogueEntry.getCatalogue();
@@ -973,7 +1015,12 @@ public class NetCDFDownloadManager {
                 String urlPath = dataset.getUrlPath();
                 if (urlPath != null && !urlPath.isEmpty()) {
                     boolean selected = false;
-                    if (regex != null) {
+                    if (files != null && !files.isEmpty()) {
+                        String filename = FilenameUtils.getName(dataset.getUrlPath());
+                        if (files.contains(filename)) {
+                            selected = true;
+                        }
+                    } else if (regex != null) {
                         String filename = FilenameUtils.getName(dataset.getUrlPath());
                         if (filename != null) {
                             Matcher matcher = regex.matcher(filename);
@@ -993,7 +1040,7 @@ public class NetCDFDownloadManager {
         return filteredDatasets;
     }
 
-    // Find where the file will belong after been downloaded
+    // Find where the file will belong after being downloaded
     // Example: s3://bucket/file.nc OR file://directory/file.nc
     public URI getDestinationURI(DatasetEntry datasetEntry) {
         OutputBean output = this.downloadBean.getOutput();
