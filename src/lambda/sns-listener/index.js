@@ -16,6 +16,7 @@
  *          limit (Integer): Define the maximum number of files to download in each download definition. Negative number to download all available files. Default: 2.
  *          dryRun (Boolean): True to test the script (no files are downloaded).
  *          downloadDefinitionId (String): The download definition to download. Default: All enabled download definitions.
+ *          files (String): Optional. Only work when downloadDefinitionId is specified. Coma separated list of files to download from the definition ID. Default: Download all files, or up to limit if specified.
  *      }
  *
  *  Developer documentation:
