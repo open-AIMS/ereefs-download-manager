@@ -172,7 +172,7 @@ Resources:
         S3Bucket:
           Fn::ImportValue: !Sub "definitions-s3-${Environment}-PrivateBucketName"
         S3Key: !Sub "deploy/download-manager/lambda/sns-listener-deploy-${LambdaMd5sum}.zip"
-      Runtime: "nodejs12.x"
+      Runtime: "nodejs18.x"
       Timeout: 25
 
   # Create an alias for the Lambda function (for the SNS subscription)
