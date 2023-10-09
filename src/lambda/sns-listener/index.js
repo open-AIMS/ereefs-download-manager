@@ -1,6 +1,8 @@
 /**
  * Copyright (c) Australian Institute of Marine Science, 2021.
  * @author Gael Lafond <g.lafond@aims.gov.au>
+ *
+ * Runtime: nodejs18.x
  */
 
 /*  **Disclaimer of Liability**
@@ -25,9 +27,9 @@
  */
 
 // Load the SDK for JavaScript
-const AWS = require('aws-sdk');
-// Set the region
-AWS.config.update({region: 'ap-southeast-2'});
+const {BatchClient, ListJobsCommand, DescribeJobsCommand, SubmitJobCommand} = require("@aws-sdk/client-batch");
+// Init client
+const awsBatchClient = new BatchClient({region: 'ap-southeast-2'});
 
 /**
  * Structure of the SNS event object:
@@ -93,8 +95,6 @@ exports.handler = function (event, context, callback) {
 
     const files = snsJSONMessage.files;
 
-    const batch = new AWS.Batch();
-
     console.log("Checking if DownloadManager is already running.");
 
     // Start the processing chain by retrieving the list of all Jobs for JobQueue that
@@ -113,7 +113,8 @@ exports.handler = function (event, context, callback) {
             jobQueue: process.env.JOB_QUEUE_ARN,
             jobStatus: status
           };
-          batch.listJobs(params, function (err, data) {
+          const command = new ListJobsCommand(params);
+          awsBatchClient.send(command, function (err, data) {
             if (err) {
               reject(err);
             } else {
@@ -169,7 +170,8 @@ exports.handler = function (event, context, callback) {
           batchDescribeJobPromises.push(
             new Promise(function (resolve, reject) {
               console.log('batchJobIds: ' + JSON.stringify(batchJobIds));
-              batch.describeJobs({jobs: batchJobIds}, function (err, data) {
+              const command = new DescribeJobsCommand({jobs: batchJobIds});
+              awsBatchClient.send(command, function (err, data) {
                 if (err) {
                   reject(err);
                 } else {
@@ -228,13 +230,13 @@ exports.handler = function (event, context, callback) {
               'environment': [
                 {'name': 'LIMIT', 'value': '' + limit},
                 {'name': 'DRYRUN', 'value': dryRun ? 'true' : 'false'},
-                {'name': 'DOWNLOADDEFINITIONID', 'value': downloadDefinitionId },
-                {'name': 'FILES', 'value': files },
+                {'name': 'DOWNLOADDEFINITIONID', 'value': downloadDefinitionId},
+                {'name': 'FILES', 'value': files},
               ]
             }
           };
-          const batch = new AWS.Batch();
-          batch.submitJob(params, function (err, data) {
+          const command = new SubmitJobCommand(params)
+          awsBatchClient.send(command, function (err, data) {
             if (err) {
               console.error("AWS Batch Error: " + err.message);
               context.fail(err);
