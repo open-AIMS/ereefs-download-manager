@@ -189,8 +189,10 @@ pipeline {
                             path: "deploy/download-manager/lambda/sns-listener-deploy-${md5sum}.zip", // Use the MD5 hash in the file name
                             file: "target/lambda/sns-listener-deploy.zip"
                         )
-                        // Wait for the object to become available on S3
-                        sh "aws s3api wait object-exists --bucket ${AWS_LAMBDA_S3_DEPLOY_BUCKET} --key deploy/download-manager/lambda/sns-listener-deploy-${md5sum}.zip"
+                        
+                        // Make sure uploaded file is available on S3
+                        sleep(time: 5, unit: 'SECONDS')
+                        
                         cfnUpdate(
                             stack: "${AWS_CLOUD_FORMATION_STACKNAME_PREFIX}-${params.executionEnvironment}",
                             params: ["Environment=${params.executionEnvironment}", "EcrUserId=${AWS_CREDENTIALS_ID_TEST}", "LambdaMd5sum=${md5sum}"],
@@ -241,8 +243,10 @@ pipeline {
                             path: "deploy/download-manager/lambda/sns-listener-deploy-${md5sum}.zip", // Use the MD5 hash in the file name
                             file: "target/lambda/sns-listener-deploy.zip"
                         )
-                        // Wait for the object to become available on S3
-                        sh "aws s3api wait object-exists --bucket ${AWS_LAMBDA_S3_DEPLOY_BUCKET} --key deploy/download-manager/lambda/sns-listener-deploy-${md5sum}.zip"
+
+                        // Make sure uploaded file is available on S3
+                        sleep(time: 5, unit: 'SECONDS')
+                        
                         cfnUpdate(
                             stack: "${AWS_CLOUD_FORMATION_STACKNAME_PREFIX}-${params.executionEnvironment}",
                             params: ["Environment=${params.executionEnvironment}", "EcrUserId=${AWS_CREDENTIALS_ID_PROD}", "LambdaMd5sum=${md5sum}"],
