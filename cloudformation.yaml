@@ -223,7 +223,7 @@ Resources:
       Name: !Sub "ereefs-download_manager-lambda-sns-listener-rule-${Environment}"
       Description: "CloudWatch rule which periodically create SNS message to trigger the SNS listener Lambda function which trigger the ereefs-download_manager docker container image"
       ScheduleExpression: "cron(0 14 ? * 3 *)" # Trigger every Tuesday at 14:00UTC
-      State: !If [ IsProdEnv, "ENABLED", "DISABLED" ]
+      State: "DISABLED"
       Targets:
         -
           Id: "ereefs-download_manager-cron-job"
