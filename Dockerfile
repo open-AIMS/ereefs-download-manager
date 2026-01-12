@@ -1,6 +1,6 @@
 # Build a Docker image for development.
 
-FROM openjdk:8-alpine
+FROM eclipse-temurin:8-jre-alpine
 
 # Set the work directory.
 WORKDIR /opt/app/bin
