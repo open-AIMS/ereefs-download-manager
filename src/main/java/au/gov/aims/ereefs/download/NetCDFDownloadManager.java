@@ -1244,10 +1244,7 @@ public class NetCDFDownloadManager {
         SSLContextBuilder selfSignedSSLCertContextBuilder = new SSLContextBuilder();
         selfSignedSSLCertContextBuilder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
         SSLConnectionSocketFactory selfSignedSSLCertSocketFactory = new SSLConnectionSocketFactory(
-                selfSignedSSLCertContextBuilder.build(),
-                new String[]{"TLSv1.2", "TLSv1.3"},  // Explicitly enable TLS 1.2 and 1.3
-                null,  // Use default cipher suites
-                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+                selfSignedSSLCertContextBuilder.build());
 
         httpClientBuilder = httpClientBuilder.setSSLSocketFactory(selfSignedSSLCertSocketFactory);
 
