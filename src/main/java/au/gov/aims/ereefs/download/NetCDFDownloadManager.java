@@ -1239,6 +1239,8 @@ public class NetCDFDownloadManager {
         httpClientBuilder.setDefaultRequestConfig(requestConfig);
 
         // Try to add support for Self Signed SSL certificates
+        // Explicitly set TLS protocols to ensure compatibility with Amazon Linux 2023
+        // which disables TLS 1.0 and 1.1 by default in its crypto policy
         SSLContextBuilder selfSignedSSLCertContextBuilder = new SSLContextBuilder();
         selfSignedSSLCertContextBuilder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
         SSLConnectionSocketFactory selfSignedSSLCertSocketFactory = new SSLConnectionSocketFactory(

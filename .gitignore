@@ -6,3 +6,5 @@
 
 # Maven files
 target/
+.history
+.vscode
