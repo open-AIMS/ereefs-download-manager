@@ -1,12 +1,15 @@
 # Build a Docker image for development.
+# Using Ubuntu-based image instead of Alpine due to OpenSSL 3.x compatibility issues
+# Alpine 3.22+ uses OpenSSL 3.5.4 which has stricter TLS requirements that break SSL handshakes
+# Ubuntu 20.04 (focal) uses OpenSSL 1.1.1 which is compatible with our Java 8 + HttpClient 4.5.2 setup
 
-FROM openjdk:8-alpine
+FROM eclipse-temurin:8-jre-focal
 
 # Set the work directory.
 WORKDIR /opt/app/bin
 
 # Create a non-root user with no password and no home directory.
-RUN addgroup ereefs && adduser --system ereefs --ingroup ereefs
+RUN groupadd -r ereefs && useradd -r -g ereefs -M ereefs
 
 # Add the main JAR file.
 ARG JAR_NAME
